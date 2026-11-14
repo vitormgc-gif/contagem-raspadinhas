@@ -116,8 +116,8 @@ const denoms=[1,2,3,5,10,15,20];let counts={1:16,2:41,3:17,5:20,10:4,15:0,20:0};
 // 2. Cola aqui o URL do Web App que o Google te der (termina em /exec)
 // ===== LIGAÇÃO AO SUPABASE (rápido) =====
 // Cola aqui os 2 valores do teu projeto Supabase (passo 2 no chat)
-const SUPABASE_URL = ''; // ex: https://abcd1234.supabase.co
-const SUPABASE_KEY = ''; // anon public key
+const SUPABASE_URL = 'https://uflkxfqtkihfryhiysmh.supabase.co'; // ex: https://abcd1234.supabase.co
+const SUPABASE_KEY = 'sb_publishable_5CWcecoMbt3f7VspiBBY6Q_IB_NEfsL'; // anon public key
 let hist = JSON.parse(localStorage.getItem('contagem_hist')||'[]');
 let aSincronizar = false;
 
@@ -254,4 +254,5 @@ if(!SUPABASE_URL || !SUPABASE_KEY) document.getElementById('avisoSheets').style.
 // Supabase é rápido: vai buscar 1s depois de abrir e depois de 15 em 15s, sempre em segundo plano, sem travar.
 setTimeout(carregarDoSupabase, 1000);
 setInterval(carregarDoSupabase, 15000);
+// Versão leve: NÃO vai buscar ao Sheets ao abrir. Só quando carregares em Sincronizar.
 </script></body></html>
