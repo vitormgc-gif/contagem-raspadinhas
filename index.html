@@ -74,7 +74,7 @@ h2{color:#16211e;font-family:Georgia,serif;font-size:22px;margin-top:0}h3{color:
 <div class="card"><div class="row">
 <div style="flex:1;min-width:180px"><label>Dia</label><input type="date" id="dia" value="2026-11-13"></div>
 <div style="flex:1;min-width:220px"><label>📸 Foto da folha</label><div style="display:flex;gap:8px;flex-wrap:wrap">
-<button class="btn btn-dark" type="button" onclick="document.getElementById('fotoCamera').click()">📷 Tirar foto</button></div>
+<button class="btn btn-dark" type="button" onclick="document.getElementById('fotoCamera').click()">📷 Tirar foto</button><button class="btn btn-green" type="button" id="btnLerFolha" style="margin-left:8px">📷 Ler folha — COLUNAS v2</button></div>
 <input type="file" id="fotoCamera" accept="image/*" capture="environment" style="display:none"></div></div>
 <img id="preview"><p class="muted">A foto serve para conferires. Confirma com os botões + / −.</p></div>
 <div class="card"><h2>📅 Folha Diária — Contagem do dia</h2><div class="grid" id="grid"></div>
@@ -275,7 +275,7 @@ setInterval(carregarDoSupabase, 15000);
 // Versão leve: NÃO vai buscar ao Sheets ao abrir. Só quando carregares em Sincronizar.
 </script>
 <div id="modalLer">
-  <div style="padding:12px;color:#fff;display:flex;justify-content:space-between;align-items:center"><b>📷 Ler folha de riscos</b><button id="fecharLer" style="background:#fff;border:0;border-radius:999px;padding:8px 12px;font-weight:800">✕ Fechar</button></div>
+  <div style="padding:12px;color:#fff;display:flex;justify-content:space-between;align-items:center"><b>📷 Ler folha — COLUNAS v2 de riscos</b><button id="fecharLer" style="background:#fff;border:0;border-radius:999px;padding:8px 12px;font-weight:800">✕ Fechar</button></div>
   <div style="position:relative;flex:1;background:#000;overflow:hidden">
     <video id="videoLer" autoplay playsinline></video>
     <canvas id="canvasLer" style="display:none"></canvas>
