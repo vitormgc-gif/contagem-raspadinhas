@@ -1,5 +1,6 @@
 <!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Contagem Diária de Raspadinhas</title><script type="text/javascript"
+<title>Contagem Diária de Raspadinhas</title><style>
+/* Fontes do sistema - sem download externo, abre mais rápido no telemóvel */
 :root{--ink:#16211e;--mut:#677873;--line:#e9e2d6;--teal:#0d7a6d;--teal2:#12b5a0}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{font-family:system-ui,sans-serif;margin:0;background:radial-gradient(900px 420px at 15% -80px,#d6f2e8 0%,transparent 60%),radial-gradient(900px 420px at 95% 0,#ffe9c4 0%,transparent 55%),#fdfaf3;color:var(--ink);min-height:100vh}
@@ -115,8 +116,8 @@ const denoms=[1,2,3,5,10,15,20];let counts={1:16,2:41,3:17,5:20,10:4,15:0,20:0};
 // 2. Cola aqui o URL do Web App que o Google te der (termina em /exec)
 // ===== LIGAÇÃO AO SUPABASE (rápido) =====
 // Cola aqui os 2 valores do teu projeto Supabase (passo 2 no chat)
-const SUPABASE_URL = 'https://uflkxfqtkihfryhiysmh.supabase.co/rest/v1/'; // ex: https://abcd1234.supabase.co
-const SUPABASE_KEY = 'sb_publishable_5CWcecoMbt3f7VspiBBY6Q_IB_NEfsL'; // anon public key
+const SUPABASE_URL = ''; // ex: https://abcd1234.supabase.co
+const SUPABASE_KEY = ''; // anon public key
 let hist = JSON.parse(localStorage.getItem('contagem_hist')||'[]');
 let aSincronizar = false;
 
