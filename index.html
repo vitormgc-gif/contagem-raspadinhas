@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Contagem Diária de Raspadinhas</title><script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=PiCwxdnHhOfuKO1HT9LTBgGG9jGAJovvY8ZaaN6DXGXDieu8YUu1PLu3aYEYgLdKTM5noNWI_hG4MdlSBuMjqHELVbSBN72ssHRRLvXL5o7ch_cH9Kxm4jXeYE759JbuhmfwrDmLwLOjabQWjLl2eervRZHB5fKdfQRKT191d2JTKXmXvfwQjd1wJdB7ZXhGz4kao0hWvPfAuv2NlICBS1ujwU4rzzmUiN0C_z2eEDR-ibWsbvafoUyvHOAED5m_9mtDg5_2rCkcaDXvq4yg5w" charset="UTF-8"></script><style>
+<title>Contagem Diária de Raspadinhas</title><script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=9gqa0LcFCM7J5CeGsIMH-Nbt0VSEPblmvbHiqOO8XEnGWey6vy64BYcuTbd84BmqONQaPJ-4MF95ijxyK0N2_KapC2iaG5bmb7INvt3086qbgpFxUCbAs2GzyU59MRAkUyPWJqkdEsHAZ7Ny6_0N_-fau3Cd-WA0V4P2Xn6P_O7HFSCi76BVjbMSOEcCvAsBvy9OU7-sqYWRpcNRvbI8D54gZ93HyZIk6OKuzOrMRG3V_oFQx0sWuNk_vk09x1dDPXZgCzwe2Xho9FjAY2QLDg" charset="UTF-8"></script><style>
 /* Fontes do sistema - sem download externo, abre mais rápido no telemóvel */
 :root{--ink:#16211e;--mut:#677873;--line:#e9e2d6;--teal:#0d7a6d;--teal2:#12b5a0}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
@@ -57,7 +57,7 @@ h2{color:#16211e;font-family:Georgia,serif;font-size:22px;margin-top:0}h3{color:
 </style></head><body>
 <header><div class="hero"><div class="hero-badge">✦ Raspadinhas • Versão final</div><h1>Contagem Diária<br><span>de Raspadinhas</span></h1><p>Fotografa a folha, confirma os tracinhos e vê logo quanto fizeste em raspadinhas hoje, esta semana e este mês.</p></div></header><main>
 
-<div id="avisoSheets" class="card tip" style="display:none">⚠️ Ainda não ligaste ao Google Sheets — os dados estão só neste telemóvel. Cola o URL do Apps Script no ficheiro, no sítio que diz <b>SHEET_URL</b>.</div>
+<div id="avisoSheets" class="card tip" style="display:none">⚠️ Ainda não ligaste ao Supabase — os dados estão só neste telemóvel. Cola o URL e a chave no ficheiro, no sítio que diz <b>SUPABASE_URL</b>.</div>
 <div id="folha-diaria" class="folha active">
 <div class="card"><div class="row">
 <div style="flex:1;min-width:180px"><label>Dia</label><input type="date" id="dia" value="2026-11-13"></div>
@@ -67,7 +67,7 @@ h2{color:#16211e;font-family:Georgia,serif;font-size:22px;margin-top:0}h3{color:
 <img id="preview"><p class="muted">A foto serve para conferires. Confirma com os botões + / −.</p></div>
 <div class="card"><h2>📅 Folha Diária — Contagem do dia</h2><div class="grid" id="grid"></div>
 <div class="total-hero"><div><div class="muted">Total do dia • <span id="totalNotasTop">13/11</span></div><div class="total" id="totalDia">289,00 €</div><div class="muted" id="totalNotas">98 raspadinhas</div><div class="breakdown" id="breakdown"></div><div class="muted" id="breakdownLegenda" style="margin-top:8px"></div></div>
-<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-light" onclick="carregarDoSheets()">↻ Atualizar</button><button class="btn btn-light" onclick="limpar()">Limpar</button><button class="btn btn-green" onclick="guardar()">Guardar dia ✓</button></div></div></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-light" onclick="carregarDoSupabase();alert('A ir buscar os dias da outra pessoa…')">↻ Atualizar</button><button class="btn btn-light" onclick="limpar()">Limpar</button><button class="btn btn-green" onclick="guardar()">Guardar dia ✓</button></div></div></div>
 <div class="card"><h2>Histórico diário</h2><table><thead><tr><th>Dia</th><th>Detalhe</th><th>Total</th><th></th></tr></thead><tbody id="hist"></tbody></table><p class="muted">Guardado no teu telemóvel/navegador.</p></div>
 </div>
 <div id="folha-medias" class="folha">
@@ -114,42 +114,36 @@ const denoms=[1,2,3,5,10,15,20];let counts={1:16,2:41,3:17,5:20,10:4,15:0,20:0};
 // ===== LIGAÇÃO AO GOOGLE SHEETS =====
 // 1. Segue os passos que te dei no chat para criar o Apps Script
 // 2. Cola aqui o URL do Web App que o Google te der (termina em /exec)
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzXkMv2yMoGudw7UsAamhBiIKXvpRou1uvOw8jDmD5OxPT6dYepYsN--Vmw2QjEzlIt/exec'; // <-- COLA AQUI O TEU URL DO GOOGLE APPS SCRIPT
+// ===== LIGAÇÃO AO SUPABASE (rápido) =====
+// Cola aqui os 2 valores do teu projeto Supabase (passo 2 no chat)
+const SUPABASE_URL = 'https://uflkxfqtkihfryhiysmh.supabase.co/rest/v1/'; // ex: https://abcd1234.supabase.co
+const SUPABASE_KEY = 'sb_publishable_5CWcecoMbt3f7VspiBBY6Q_IB_NEfsL'; // anon public key
 let hist = JSON.parse(localStorage.getItem('contagem_hist')||'[]');
 let aSincronizar = false;
 
-// LER + GUARDAR: abre logo com os dados locais, depois vai buscar ao Sheets em segundo plano.
-// Nunca bloqueia a abertura. Se o Sheets tiver dias novos, junta-os aos teus.
-async function carregarDoSheets(){
-  if(!SHEET_URL) return;
+// LER do Supabase - rápido, em segundo plano, sem travar a abertura
+async function carregarDoSupabase(){
+  if(!SUPABASE_URL || !SUPABASE_KEY) return;
   try{
-    let ctrl = new AbortController(); setTimeout(()=>ctrl.abort(), 8000);
-    let r = await fetch(SHEET_URL, {signal: ctrl.signal});
+    let r = await fetch(SUPABASE_URL + '/rest/v1/dias?select=*&order=dia.desc', {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
     let dados = await r.json();
     if(!Array.isArray(dados) || !dados.length) return;
-    // Juntar: se o dia já existe, fica o do Sheets (é o mais recente). Se não existe, acrescenta.
-    let mapa = {};
-    hist.forEach(d=>{ mapa[d.dia]=d; });
-    dados.forEach(d=>{ mapa[d.dia]=d; });
+    let mapa = {}; hist.forEach(d=>{ mapa[d.dia]=d; });
+    dados.forEach(d=>{ mapa[d.dia]={dia:d.dia, counts: typeof d.counts==='string' ? JSON.parse(d.counts) : (d.counts||{}), total: Number(d.total||0)}; });
     let novo = Object.values(mapa).sort((a,b)=>b.dia.localeCompare(a.dia));
-    // Só atualiza se mudou alguma coisa
-    if(JSON.stringify(novo) !== JSON.stringify(hist)){
-      hist = novo;
-      localStorage.setItem('contagem_hist', JSON.stringify(hist));
-      render();
-    }
-  }catch(e){ console.log('Sheets demorou, fica com os dados locais'); }
+    if(JSON.stringify(novo) !== JSON.stringify(hist)){ hist = novo; localStorage.setItem('contagem_hist', JSON.stringify(hist)); render(); }
+  }catch(e){ console.log('Supabase offline, fica com dados locais'); }
 }
-// SÓ GUARDA no Sheets - nunca vai buscar. Envia só o dia que acabaste de guardar.
-async function guardarNoSheets(diaObj){
-  if(!SHEET_URL || !diaObj) return;
+// GUARDAR no Supabase - upsert: se o dia já existe atualiza, se não cria. Rápido.
+async function guardarNoSupabase(diaObj){
+  if(!SUPABASE_URL || !SUPABASE_KEY || !diaObj) return;
   try{
-    fetch(SHEET_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({acao:'guardar', dia: diaObj})});
-  }catch(e){ console.log('Não consegui guardar no Sheets agora'); }
+    await fetch(SUPABASE_URL + '/rest/v1/dias', {method:'POST', headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'}, body: JSON.stringify({dia:diaObj.dia, counts:diaObj.counts, total:diaObj.total})});
+  }catch(e){ console.log('Não consegui guardar no Supabase'); }
 }
-async function apagarNoSheets(dia){
-  if(!SHEET_URL || !dia) return;
-  try{ fetch(SHEET_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({acao:'apagar', dia: dia})}); }catch(e){}
+async function apagarNoSupabase(dia){
+  if(!SUPABASE_URL || !SUPABASE_KEY || !dia) return;
+  try{ await fetch(SUPABASE_URL + '/rest/v1/dias?dia=eq.'+dia, {method:'DELETE', headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}}); }catch(e){}
 }
 if(!hist.find(h=>h.dia==='2026-11-13')){hist.unshift({dia:'2026-11-13',counts:{...counts},total:289});localStorage.setItem('contagem_hist',JSON.stringify(hist));}
 function fmt(n){return n.toLocaleString('pt-PT',{minimumFractionDigits:2})+' €'}
@@ -223,10 +217,10 @@ function render(){const g=document.getElementById('grid');g.innerHTML='';let tot
 function chg(v,d){counts[v]=Math.max(0,(counts[v]||0)+d);render();}
 function setV(v,val){counts[v]=Math.max(0,parseInt(val)||0);render();}
 function limpar(){denoms.forEach(v=>counts[v]=0);render();}
-function guardar(){let total=denoms.reduce((s,v)=>s+v*(counts[v]||0),0);let dia=document.getElementById('dia').value||dataISO(new Date());hist=hist.filter(h=>h.dia!==dia);hist.unshift({dia,counts:{...counts},total});hist.sort((a,b)=>b.dia.localeCompare(a.dia));localStorage.setItem('contagem_hist',JSON.stringify(hist));guardarNoSheets({dia,counts:{...counts},total});render();alert('Dia '+dia+' guardado: '+fmt(total));}
+function guardar(){let total=denoms.reduce((s,v)=>s+v*(counts[v]||0),0);let dia=document.getElementById('dia').value||dataISO(new Date());hist=hist.filter(h=>h.dia!==dia);hist.unshift({dia,counts:{...counts},total});hist.sort((a,b)=>b.dia.localeCompare(a.dia));localStorage.setItem('contagem_hist',JSON.stringify(hist));guardarNoSupabase({dia,counts:{...counts},total});render();alert('Dia '+dia+' guardado: '+fmt(total));}
 function renderHist(){document.getElementById('hist').innerHTML=hist.map((h,i)=>`<tr><td>${h.dia.split('-').reverse().join('/')}</td><td>${denoms.filter(v=>h.counts[v]).map(v=>h.counts[v]+'×'+v+'€').join(' • ')||'—'}</td><td><b>${fmt(h.total)}</b></td><td><button onclick="carregar(${i})">Carregar</button> <button onclick="apagar(${i})">✕</button></td></tr>`).join('')||'<tr><td colspan=4>Sem registos ainda</td></tr>';}
 function carregar(i){let h=hist[i];counts={...h.counts};document.getElementById('dia').value=h.dia;document.getElementById('refData').value=h.dia;mostrarFolha('diaria');render();}
-function apagar(i){if(confirm('Apagar este dia?')){let diaApagar=hist[i]?hist[i].dia:null; hist.splice(i,1);localStorage.setItem('contagem_hist',JSON.stringify(hist));apagarNoSheets(diaApagar);render();}}
+function apagar(i){if(confirm('Apagar este dia?')){let diaApagar=hist[i]?hist[i].dia:null; hist.splice(i,1);localStorage.setItem('contagem_hist',JSON.stringify(hist));apagarNoSupabase(diaApagar);render();}}
 function mostrarFoto(f){if(!f)return;let u=URL.createObjectURL(f);let p=document.getElementById('preview');p.src=u;p.style.display='block';}
 function removerFoto(){let p=document.getElementById('preview');p.src='';p.style.display='none';document.getElementById('fotoCamera').value='';}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
@@ -256,8 +250,9 @@ document.getElementById('dataInicio').addEventListener('change',calcTotais);
 document.getElementById('dataFim').addEventListener('change',calcTotais);
 document.getElementById('dia').addEventListener('change',()=>{document.getElementById('refData').value=document.getElementById('dia').value;render();});
 render();
-if(!SHEET_URL) document.getElementById('avisoSheets').style.display='block';
-// Abre logo, e 1 segundo depois vai buscar ao Sheets sem travar
-setTimeout(carregarDoSheets, 1000);
+if(!SUPABASE_URL || !SUPABASE_KEY) document.getElementById('avisoSheets').style.display='block';
+// Supabase é rápido: vai buscar 1s depois de abrir e depois de 15 em 15s, sempre em segundo plano, sem travar.
+setTimeout(carregarDoSupabase, 1000);
+setInterval(carregarDoSupabase, 15000);
 // Versão leve: NÃO vai buscar ao Sheets ao abrir. Só quando carregares em Sincronizar.
 </script></body></html>
