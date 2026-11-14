@@ -1,0 +1,257 @@
+<!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contagem Diária de Raspadinhas</title><style>
+/* Fontes do sistema - sem download externo, abre mais rápido no telemóvel */
+:root{--ink:#16211e;--mut:#677873;--line:#e9e2d6;--teal:#0d7a6d;--teal2:#12b5a0}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:system-ui,sans-serif;margin:0;background:radial-gradient(900px 420px at 15% -80px,#d6f2e8 0%,transparent 60%),radial-gradient(900px 420px at 95% 0,#ffe9c4 0%,transparent 55%),#fdfaf3;color:var(--ink);min-height:100vh}
+header{max-width:920px;margin:22px auto 0;padding:0 16px}
+.hero{background:linear-gradient(135deg,#0b2e2a 0%,#0d7a6d 58%,#12b5a0 100%);color:#fff;border-radius:28px;padding:26px 24px 22px;position:relative;overflow:hidden;box-shadow:0 6px 14px rgba(11,46,42,.12)}
+.hero:before{content:"";position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,215,120,.45),transparent 65%);right:-90px;top:-120px}
+.hero:after{content:"€";position:absolute;right:22px;bottom:-28px;font-family:Georgia,serif;font-size:160px;line-height:1;color:rgba(255,255,255,.08);font-weight:700}
+.hero h1{font-family:Georgia,serif;margin:0;font-size:34px;line-height:1.05;position:relative}.hero h1 span{color:#ffd97a}
+.hero p{margin:10px 0 0;opacity:.88;font-size:14.5px;max-width:520px;position:relative}
+.hero-badge{display:inline-flex;gap:6px;align-items:center;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);padding:6px 11px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-bottom:14px}
+main{max-width:920px;margin:auto;padding:16px 16px 110px}.card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 3px 8px rgba(50,35,10,.05);margin-bottom:14px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}label{font-size:12px;font-weight:800;display:block;margin-bottom:7px;color:var(--mut);letter-spacing:.6px;text-transform:uppercase}
+input[type=date],input[type=number]{padding:12px 13px;border:1.5px solid #e9e2d6;border-radius:14px;width:100%;background:#fffdf8;font:inherit;font-weight:600}input:focus,select:focus{outline:3px solid #bfeee3;border-color:var(--teal2)}
+.btn{border:0;border-radius:999px;padding:12px 18px;font-weight:800;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.08);transition:.15s;font:inherit;font-size:14px}.btn:hover{transform:translateY(-1px)}.btn:active{transform:scale(.97)}
+.btn-dark{background:#16211e;color:#fff}.btn-light{background:#fff1de;color:#6b4a2f}.btn-green{background:linear-gradient(135deg,#0d7a6d,#12b5a0);color:#fff}.btn-blue{background:linear-gradient(135deg,#4a7dff,#7aa6ff);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(6px,2vw,12px)}
+.denom{padding:clamp(10px,3vw,16px) clamp(6px,2vw,12px) clamp(10px,3vw,14px);min-width:0}
+.coin{width:clamp(36px,11vw,52px);height:clamp(36px,11vw,52px);font-size:clamp(15px,4.5vw,19px)}
+.count{font-size:clamp(26px,8vw,42px)}
+.denom b{font-size:clamp(10px,3vw,12px)}
+.controls{gap:clamp(4px,1.5vw,8px)}
+.controls button{width:clamp(36px,11vw,46px);height:clamp(36px,11vw,46px);font-size:clamp(18px,5.5vw,24px)}
+.denom input[type=number]{font-size:clamp(13px,4vw,16px);padding:10px 4px}
+@media(max-width:360px){.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.controls button{width:34px;height:34px}}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr);gap:12px}}
+.denom{border-radius:20px;text-align:center;border:1px solid rgba(255,255,255,.8);box-shadow:0 6px 16px rgba(0,0,0,.04);transition:.15s}.denom:hover{transform:translateY(-2px)}
+.denom:nth-child(1){background:linear-gradient(180deg,#e6f7f2,#f6fffc)}.denom:nth-child(2){background:linear-gradient(180deg,#fff6cf,#fffdf0)}.denom:nth-child(3){background:linear-gradient(180deg,#ffe8dd,#fff6f1)}.denom:nth-child(4){background:linear-gradient(180deg,#e2f4d8,#f7fff2)}.denom:nth-child(5){background:linear-gradient(180deg,#ddeaff,#f2f7ff)}.denom:nth-child(6){background:linear-gradient(180deg,#ece9ff,#f8f7ff)}.denom:nth-child(7){background:linear-gradient(180deg,#fce4ef,#fff4f8)}
+.coin{border-radius:50%;margin:0 auto 8px;display:grid;place-items:center;font-family:Georgia,serif;font-weight:700;color:#fff;box-shadow:inset 0 -4px 8px rgba(0,0,0,.15),0 6px 12px rgba(0,0,0,.12);border:2px solid rgba(255,255,255,.7)}
+.denom:nth-child(1) .coin{background:#0d7a6d}.denom:nth-child(2) .coin{background:#d9a521}.denom:nth-child(3) .coin{background:#e07a4f}.denom:nth-child(4) .coin{background:#5aa63a}.denom:nth-child(5) .coin{background:#4a7dff}.denom:nth-child(6) .coin{background:#7c5cd6}.denom:nth-child(7) .coin{background:#d94f8a}
+.denom b{letter-spacing:.8px;text-transform:uppercase;color:var(--mut)}.count{font-family:Georgia,serif;font-weight:700;margin:4px 0 2px;line-height:1}.denom .muted{font-weight:700;color:#0d7a6d}
+.controls{display:flex;justify-content:center;margin-top:10px}.controls button{border-radius:50%;border:0;font-weight:900;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.1)}.controls button:active{transform:scale(.92)}
+.plus{background:#16211e;color:#fff}.minus{background:#fff;color:#16211e;border:1px solid #eee}
+.denom input[type=number]{margin-top:10px;text-align:center;background:rgba(255,255,255,.85)}
+.total{font-family:Georgia,serif;font-size:40px;font-weight:700;color:#0d7a6d;line-height:1}.muted{color:var(--mut);font-size:13px}
+table{width:100%;border-collapse:collapse}th,td{padding:12px;border-bottom:1px solid #f0e8da;text-align:left}th{font-size:11px;text-transform:uppercase;color:#8a9a94;letter-spacing:.7px}tr:nth-child(even) td{background:#fffaf3}
+#preview{max-width:100%;border-radius:18px;display:none;margin-top:12px;border:4px solid #fff;box-shadow:0 10px 24px rgba(0,0,0,.12)}
+.tip{background:linear-gradient(135deg,#fff8d6,#fff1de);border:1px solid #f5d98a;border-radius:16px;padding:14px;font-size:14px}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(255,255,255,.92);border-top:1px solid #e9e2d6;box-shadow:0 -2px 8px rgba(20,30,25,.08);padding:8px 10px calc(10px + env(safe-area-inset-bottom))}
+.tabs{display:flex;gap:4px;max-width:640px;margin:0 auto}
+.tab{flex:1;border:0;background:transparent;border-radius:16px;padding:8px 6px 6px;cursor:pointer;color:#5b6f6a;font:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:58px}
+.tab .ico{font-size:22px;line-height:1}.tab .lbl{font-size:12px;font-weight:800}.tab .dot{width:5px;height:5px;border-radius:50%;background:transparent}
+.tab.active{background:#16211e;color:#fff;box-shadow:0 8px 18px rgba(22,33,30,.22)}.tab.active .dot{background:#ffd97a}
+.folha{display:none}.folha.active{display:block;animation:fade .25s ease}.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}.kpi>div{border-radius:18px;padding:16px;border:1px solid #f0e8da}.kpi>div:nth-child(1){background:#e6f7f2}.kpi>div:nth-child(2){background:#fff6cf}.kpi>div:nth-child(3){background:#ece9ff}.kpi>div:nth-child(4){background:#ffe8dd}.kpi b{font-family:Georgia,serif;font-size:24px;color:#16211e}
+select{padding:12px;border:1.5px solid #e9e2d6;border-radius:14px;background:#fffdf8;font:inherit;font-weight:600}
+h2{color:#16211e;font-family:Georgia,serif;font-size:22px;margin-top:0}h3{color:#0d7a6d;font-size:15px}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.total-hero{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;background:linear-gradient(135deg,#0b2e2a,#0d7a6d);color:#fff;border-radius:20px;padding:20px;margin-top:16px}.total-hero .muted{color:rgba(255,255,255,.75)}.total-hero .total{color:#ffd97a;font-size:46px}
+.breakdown{display:flex;height:10px;border-radius:999px;overflow:hidden;background:#eee;margin-top:12px}.breakdown div{height:100%}
+.export-opt{display:flex;gap:14px;align-items:center;background:#fff;border:1px solid #e9e2d6;border-radius:18px;padding:16px;margin-bottom:12px;text-align:left;width:100%;cursor:pointer}.export-opt:hover{box-shadow:0 10px 22px rgba(0,0,0,.07)}.export-opt .ico2{font-size:28px;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:#e6f7f2;flex-shrink:0}.export-opt h3{margin:0 0 4px;color:#16211e;font-size:17px}.export-opt p{margin:0;color:#677873;font-size:13px}.export-opt .go{margin-left:auto;font-size:22px;color:#0d7a6d;font-weight:900}
+.intervalo{background:linear-gradient(135deg,#0b2e2a,#0d7a6d);color:#fff;border-radius:20px;padding:20px;margin:16px 0}.intervalo .muted{color:rgba(255,255,255,.75)}.intervalo .total{color:#ffd97a;font-size:44px}.intervalo label{color:rgba(255,255,255,.8)}.intervalo input{color:#16211e}
+.grafico{background:#fffdf8;border:1px solid #f0e8da;border-radius:18px;padding:16px;margin:12px 0}.grafico canvas{width:100%;height:250px;display:block}.graf-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:#677873;font-weight:700}.graf-legend span{display:inline-flex;gap:6px;align-items:center}.graf-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.chip{border:0;background:#fff1de;color:#6b4a2f;border-radius:999px;padding:9px 14px;font-weight:800;cursor:pointer;font:inherit;font-size:13px}.chip.active{background:#ffd97a;color:#16211e}
+@media(max-width:560px){.hero h1{font-size:28px}.hero:after{font-size:110px}.total-hero .total,.intervalo .total{font-size:36px}}
+</style></head><body>
+<header><div class="hero"><div class="hero-badge">✦ Raspadinhas • Versão final</div><h1>Contagem Diária<br><span>de Raspadinhas</span></h1><p>Fotografa a folha, confirma os tracinhos e vê logo quanto fizeste em raspadinhas hoje, esta semana e este mês.</p></div></header><main>
+
+<div id="avisoSheets" class="card tip" style="display:none">⚠️ Ainda não ligaste ao Supabase — os dados estão só neste telemóvel. Cola o URL e a chave no ficheiro, no sítio que diz <b>SUPABASE_URL</b>.</div>
+<div id="folha-diaria" class="folha active">
+<div class="card"><div class="row">
+<div style="flex:1;min-width:180px"><label>Dia</label><input type="date" id="dia" value="2026-11-13"></div>
+<div style="flex:1;min-width:220px"><label>📸 Foto da folha</label><div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn btn-dark" type="button" onclick="document.getElementById('fotoCamera').click()">📷 Tirar foto</button></div>
+<input type="file" id="fotoCamera" accept="image/*" capture="environment" style="display:none"></div></div>
+<img id="preview"><p class="muted">A foto serve para conferires. Confirma com os botões + / −.</p></div>
+<div class="card"><h2>📅 Folha Diária — Contagem do dia</h2><div class="grid" id="grid"></div>
+<div class="total-hero"><div><div class="muted">Total do dia • <span id="totalNotasTop">13/11</span></div><div class="total" id="totalDia">289,00 €</div><div class="muted" id="totalNotas">98 raspadinhas</div><div class="breakdown" id="breakdown"></div><div class="muted" id="breakdownLegenda" style="margin-top:8px"></div></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-light" onclick="carregarDoSupabase();alert('A ir buscar os dias da outra pessoa…')">↻ Atualizar</button><button class="btn btn-light" onclick="limpar()">Limpar</button><button class="btn btn-green" onclick="guardar()">Guardar dia ✓</button></div></div></div>
+<div class="card"><h2>Histórico diário</h2><table><thead><tr><th>Dia</th><th>Detalhe</th><th>Total</th><th></th></tr></thead><tbody id="hist"></tbody></table><p class="muted">Guardado no teu telemóvel/navegador.</p></div>
+</div>
+<div id="folha-medias" class="folha">
+<div class="card"><h2>📊 Folha Médias</h2>
+<div class="row" style="margin-bottom:12px"><div><label>Ver médias de</label><input type="date" id="refData" value="2026-11-13"></div>
+<div><label>Semana começa</label><select id="inicioSemana"><option value="1">Segunda-feira</option><option value="0">Domingo</option></select></div></div>
+<div class="kpi"><div><div class="muted">Média / dia — esta semana</div><b id="mediaSemana">—</b><div class="muted" id="mediaSemanaDet"></div></div><div><div class="muted">Média / dia — este mês</div><b id="mediaMes">—</b><div class="muted" id="mediaMesDet"></div></div><div><div class="muted">Média / dia — geral</div><b id="mediaGeral">—</b><div class="muted" id="mediaGeralDet"></div></div><div><div class="muted">Média / raspadinha</div><b id="mediaNota">—</b><div class="muted" id="mediaNotaDet"></div></div></div>
+<h3>📈 Gráfico de vendas mensais</h3>
+<div class="grafico"><canvas id="grafMes" width="800" height="260"></canvas><div class="graf-legend" id="legGrafMes"></div></div>
+<h3>🎫 Gráfico por tipo de raspadinha</h3>
+<div class="grafico"><canvas id="grafNota" width="800" height="260"></canvas><div class="graf-legend" id="legGrafNota"></div></div>
+<h3>Média por mês</h3><table><thead><tr><th>Mês</th><th>Dias</th><th>Total mês</th><th>Média / dia</th><th>Média / raspadinha</th></tr></thead><tbody id="tabMediasMes"></tbody></table>
+<h3>Média por semana</h3><table><thead><tr><th>Semana</th><th>Dias</th><th>Total semana</th><th>Média / dia</th></tr></thead><tbody id="tabMediasSemana"></tbody></table>
+</div></div>
+<div id="folha-total" class="folha">
+<div class="card"><h2>💰 Folha Total</h2>
+<div class="kpi"><div><div class="muted">Total — esta semana</div><b id="kpiSemana">—</b><div class="muted" id="kpiSemanaDetalhe"></div></div><div><div class="muted">Total — este mês</div><b id="kpiMes">—</b><div class="muted" id="kpiMesDetalhe"></div></div><div><div class="muted">Total — geral</div><b id="kpiTotal">—</b><div class="muted" id="kpiTotalDetalhe"></div></div><div><div class="muted">Total raspadinhas</div><b id="kpiNotas">—</b><div class="muted" id="kpiNotasDetalhe"></div></div></div><p class="muted" id="legendaPeriodo"></p>
+<div class="total-hero"><div style="width:100%"><div class="muted">Total geral • repartição por tipo de raspadinha</div><div class="total" id="totalGeralHero">0,00 €</div><div class="muted" id="totalGeralHeroDet">—</div><div class="breakdown" id="totalBreakdown"></div><div class="muted" id="totalBreakdownLegenda" style="margin-top:10px"></div></div></div>
+<div class="intervalo"><h2 style="color:#fff;margin:0 0 4px">📆 Total entre datas</h2><p class="muted" style="margin:0 0 14px">Escolhe duas datas e vê logo o total desse período.</p>
+<div class="row"><div style="flex:1;min-width:150px"><label>De</label><input type="date" id="dataInicio" value="2026-11-01"></div><div style="flex:1;min-width:150px"><label>Até</label><input type="date" id="dataFim" value="2026-11-13"></div></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="chip" onclick="atalhoIntervalo('hoje')">Hoje</button><button class="chip" onclick="atalhoIntervalo('semana')">Esta semana</button><button class="chip" onclick="atalhoIntervalo('mes')">Este mês</button><button class="chip" onclick="atalhoIntervalo('7')">Últimos 7 dias</button><button class="chip" onclick="atalhoIntervalo('30')">Últimos 30 dias</button><button class="chip" onclick="atalhoIntervalo('tudo')">Tudo</button></div>
+<div style="display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:12px;margin-top:16px"><div><div class="muted" id="intervaloPeriodo">—</div><div class="total" id="intervaloTotal">0,00 €</div><div class="muted" id="intervaloDetalhe">—</div></div><div style="display:flex;gap:8px"><button class="btn btn-light" onclick="copiarIntervalo()">📋 Copiar</button><button class="btn btn-green" onclick="exportarIntervalo()">⬇️ Exportar este período</button></div></div><div class="breakdown" id="intervaloBreakdown" style="background:rgba(255,255,255,.2)"></div></div>
+<h3>Dias dentro do período</h3><table><thead><tr><th>Dia</th><th>Detalhe</th><th>Total</th><th>Raspadinhas</th></tr></thead><tbody id="tabIntervalo"></tbody></table>
+<h3>Total por mês</h3><table><thead><tr><th>Mês</th><th>Dias</th><th>Total</th><th>Raspadinhas</th></tr></thead><tbody id="tabTotalMes"></tbody></table>
+<h3>Total por semana</h3><table><thead><tr><th>Semana</th><th>Dias</th><th>Total</th><th>Raspadinhas</th></tr></thead><tbody id="tabTotalSemana"></tbody></table>
+</div></div>
+<div id="folha-exportar" class="folha">
+<div class="card"><h2>⬇️ Folha Exportar</h2><p class="muted">O Excel vem dividido nas mesmas folhas da app: <b>Diária</b>, <b>Médias</b>, <b>Total</b>.</p>
+<div class="kpi" style="margin:12px 0 16px"><div><div class="muted">Dias a exportar</div><b id="exportDias">—</b></div><div><div class="muted">Total a exportar</div><b id="exportTotal">—</b></div><div><div class="muted">Período</div><b id="exportPeriodo" style="font-size:16px">—</b></div></div>
+<button class="export-opt" onclick="exportarExcel()"><span class="ico2">📗</span><span><h3>Excel completo — 3 folhas (.xls)</h3><p>Diária + Médias + Total. Inclui o total entre datas que escolheste no Total.</p></span><span class="go">›</span></button>
+<button class="export-opt" onclick="exportarResumoMensal()"><span class="ico2">📅</span><span><h3>Resumo Mensal (.xls)</h3><p>Só o mês da data escolhida, com total do mês e média/dia.</p></span><span class="go">›</span></button>
+<button class="export-opt" onclick="exportarCSV()"><span class="ico2">📄</span><span><h3>Excel leve (.csv)</h3><p>Abre no Excel / Google Sheets. Mais leve, com as 3 secções.</p></span><span class="go">›</span></button>
+<button class="export-opt" onclick="exportar()"><span class="ico2">📋</span><span><h3>Copiar resumo</h3><p>Copia o resumo dia a dia para colares no WhatsApp, notas ou email.</p></span><span class="go">›</span></button>
+</div></div>
+</main>
+<nav class="bottom-nav"><div class="tabs">
+<button class="tab active" data-folha="diaria" onclick="mostrarFolha('diaria')"><span class="ico">📅</span><span class="lbl">Diária</span><span class="dot"></span></button>
+<button class="tab" data-folha="medias" onclick="mostrarFolha('medias')"><span class="ico">📊</span><span class="lbl">Médias</span><span class="dot"></span></button>
+<button class="tab" data-folha="total" onclick="mostrarFolha('total')"><span class="ico">💰</span><span class="lbl">Total</span><span class="dot"></span></button>
+<button class="tab" data-folha="exportar" onclick="mostrarFolha('exportar')"><span class="ico">⬇️</span><span class="lbl">Exportar</span><span class="dot"></span></button>
+</div></nav>
+<script>
+const denoms=[1,2,3,5,10,15,20];let counts={1:16,2:41,3:17,5:20,10:4,15:0,20:0};
+// ===== LIGAÇÃO AO GOOGLE SHEETS =====
+// 1. Segue os passos que te dei no chat para criar o Apps Script
+// 2. Cola aqui o URL do Web App que o Google te der (termina em /exec)
+// ===== LIGAÇÃO AO SUPABASE (rápido) =====
+// Cola aqui os 2 valores do teu projeto Supabase (passo 2 no chat)
+const SUPABASE_URL = ''; // ex: https://abcd1234.supabase.co
+const SUPABASE_KEY = ''; // anon public key
+let hist = JSON.parse(localStorage.getItem('contagem_hist')||'[]');
+let aSincronizar = false;
+
+// LER do Supabase - rápido, em segundo plano, sem travar a abertura
+async function carregarDoSupabase(){
+  if(!SUPABASE_URL || !SUPABASE_KEY) return;
+  try{
+    let r = await fetch(SUPABASE_URL + '/rest/v1/dias?select=*&order=dia.desc', {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    let dados = await r.json();
+    if(!Array.isArray(dados) || !dados.length) return;
+    let mapa = {}; hist.forEach(d=>{ mapa[d.dia]=d; });
+    dados.forEach(d=>{ mapa[d.dia]={dia:d.dia, counts: typeof d.counts==='string' ? JSON.parse(d.counts) : (d.counts||{}), total: Number(d.total||0)}; });
+    let novo = Object.values(mapa).sort((a,b)=>b.dia.localeCompare(a.dia));
+    if(JSON.stringify(novo) !== JSON.stringify(hist)){ hist = novo; localStorage.setItem('contagem_hist', JSON.stringify(hist)); render(); }
+  }catch(e){ console.log('Supabase offline, fica com dados locais'); }
+}
+// GUARDAR no Supabase - upsert: se o dia já existe atualiza, se não cria. Rápido.
+async function guardarNoSupabase(diaObj){
+  if(!SUPABASE_URL || !SUPABASE_KEY || !diaObj) return;
+  try{
+    await fetch(SUPABASE_URL + '/rest/v1/dias', {method:'POST', headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'}, body: JSON.stringify({dia:diaObj.dia, counts:diaObj.counts, total:diaObj.total})});
+  }catch(e){ console.log('Não consegui guardar no Supabase'); }
+}
+async function apagarNoSupabase(dia){
+  if(!SUPABASE_URL || !SUPABASE_KEY || !dia) return;
+  try{ await fetch(SUPABASE_URL + '/rest/v1/dias?dia=eq.'+dia, {method:'DELETE', headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}}); }catch(e){}
+}
+if(!hist.find(h=>h.dia==='2026-11-13')){hist.unshift({dia:'2026-11-13',counts:{...counts},total:289});localStorage.setItem('contagem_hist',JSON.stringify(hist));}
+function fmt(n){return n.toLocaleString('pt-PT',{minimumFractionDigits:2})+' €'}
+function parseDia(s){let p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function dataISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function mostrarFolha(id){window.scrollTo({top:0,behavior:'smooth'});document.querySelectorAll('.folha').forEach(e=>e.classList.remove('active'));document.getElementById('folha-'+id).classList.add('active');document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.folha===id));}
+function todosIncluindoAtual(){let t=[...hist];let dia=document.getElementById('dia').value;let tot=denoms.reduce((s,v)=>s+v*(counts[v]||0),0);if(!t.find(x=>x.dia===dia))t.unshift({dia,counts:{...counts},total:tot});return t.sort((a,b)=>b.dia.localeCompare(a.dia));}
+function somaPeriodo(l){return l.reduce((s,x)=>s+x.total,0);}
+function totalNotasLista(l){return l.reduce((s,x)=>s+denoms.reduce((a,v)=>a+(x.counts[v]||0),0),0);}
+function resumoPorMes(todos){let m={};todos.forEach(x=>{let k=x.dia.slice(0,7);if(!m[k])m[k]={dias:0,total:0,notas:0};m[k].dias++;m[k].total+=x.total;m[k].notas+=denoms.reduce((s,v)=>s+(x.counts[v]||0),0);});return Object.keys(m).sort().reverse().map(k=>({mes:k,dias:m[k].dias,total:m[k].total,notas:m[k].notas,media:m[k].total/m[k].dias,mediaNota:m[k].notas?m[k].total/m[k].notas:0}));}
+function resumoPorSemana(todos){let inicio=+document.getElementById('inicioSemana').value;let m={};todos.forEach(x=>{let d=parseDia(x.dia);let ini=new Date(d);let off=(d.getDay()-inicio+7)%7;ini.setDate(d.getDate()-off);let fim=new Date(ini);fim.setDate(ini.getDate()+6);let k=dataISO(ini);if(!m[k])m[k]={ini:dataISO(ini),fim:dataISO(fim),dias:0,total:0,notas:0};m[k].dias++;m[k].total+=x.total;m[k].notas+=denoms.reduce((s,v)=>s+(x.counts[v]||0),0);});return Object.keys(m).sort().reverse().map(k=>({...m[k],media:m[k].total/m[k].dias}));}
+function resumoPorNota(todos){return denoms.map(v=>{let qtd=todos.reduce((s,x)=>s+(x.counts[v]||0),0);return {nota:v,qtd,valor:qtd*v,mediaDia:todos.length?qtd/todos.length:0};});}
+function calcIntervalo(){let iniS=document.getElementById('dataInicio').value,fimS=document.getElementById('dataFim').value;if(!iniS||!fimS)return {lista:[],total:0,notas:0,iniS,fimS};let ini=parseDia(iniS),fim=parseDia(fimS);if(fim<ini){let t=ini;ini=fim;fim=t;iniS=dataISO(ini);fimS=dataISO(fim);}let todos=todosIncluindoAtual();let lista=todos.filter(x=>{let d=parseDia(x.dia);return d>=ini&&d<=fim;}).sort((a,b)=>a.dia.localeCompare(b.dia));let total=somaPeriodo(lista),notas=totalNotasLista(lista);let diasCalendario=Math.round((fim-ini)/86400000)+1;document.getElementById('intervaloPeriodo').textContent=iniS.split('-').reverse().join('/')+' a '+fimS.split('-').reverse().join('/')+' • '+diasCalendario+' dia(s) de calendário';document.getElementById('intervaloTotal').textContent=fmt(total);document.getElementById('intervaloDetalhe').textContent=lista.length+' dia(s) com registo • '+notas+' raspadinhas • média '+(lista.length?fmt(total/lista.length):fmt(0))+'/dia com registo';let cols=['#ffd97a','#fff','#e07a4f','#5aa63a','#4a7dff','#cdb4f2','#ff8fb5'];document.getElementById('intervaloBreakdown').innerHTML=denoms.map((v,i)=>{let val=lista.reduce((s,x)=>s+v*(x.counts[v]||0),0);return val?`<div style="width:${total?val/total*100:0}%;background:${cols[i]}"></div>`:'';}).join('');document.getElementById('tabIntervalo').innerHTML=lista.map(x=>`<tr><td>${x.dia.split('-').reverse().join('/')}</td><td>${denoms.filter(v=>x.counts[v]).map(v=>x.counts[v]+'×'+v+'€').join(' • ')||'—'}</td><td><b>${fmt(x.total)}</b></td><td>${denoms.reduce((s,v)=>s+(x.counts[v]||0),0)}</td></tr>`).join('')||'<tr><td colspan=4>Sem dias com registo neste período.</td></tr>';return {lista,total,notas,iniS,fimS,ini,fim};}
+function atalhoIntervalo(tipo){let hoje=new Date();let ini=new Date(hoje),fim=new Date(hoje);if(tipo==='semana'){let off=(hoje.getDay()-1+7)%7;ini.setDate(hoje.getDate()-off);fim.setDate(ini.getDate()+6);}else if(tipo==='mes'){ini=new Date(hoje.getFullYear(),hoje.getMonth(),1);fim=new Date(hoje.getFullYear(),hoje.getMonth()+1,0);}else if(tipo==='7'){ini.setDate(hoje.getDate()-6);}else if(tipo==='30'){ini.setDate(hoje.getDate()-29);}else if(tipo==='tudo'){let todos=todosIncluindoAtual();if(!todos.length)return;let ds=todos.map(x=>x.dia).sort();ini=parseDia(ds[0]);fim=parseDia(ds[ds.length-1]);}document.getElementById('dataInicio').value=dataISO(ini);document.getElementById('dataFim').value=dataISO(fim);calcTotais();}
+function copiarIntervalo(){let r=calcIntervalo();let t='Total entre '+r.iniS.split('-').reverse().join('/')+' e '+r.fimS.split('-').reverse().join('/')+' — '+fmt(r.total)+' ('+r.lista.length+' dia(s), '+r.notas+' raspadinhas)\n'+r.lista.map(x=>x.dia.split('-').reverse().join('/')+' — '+fmt(x.total)).join('\n');navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));}
+function exportarIntervalo(){let r=calcIntervalo();if(!r.lista.length){alert('Sem dias neste período.');return;}let rows=r.lista.map(x=>`<tr><td>${x.dia.split('-').reverse().join('/')}</td><td>${x.total.toFixed(2)}</td><td>${denoms.reduce((s,v)=>s+(x.counts[v]||0),0)}</td></tr>`).join('');let htmlTable=`<html><head><meta charset="utf-8"></head><body><h2>Total entre ${r.iniS.split('-').reverse().join('/')} e ${r.fimS.split('-').reverse().join('/')}</h2><table border="1"><tr><th>Dia</th><th>Total</th><th>Raspadinhas</th></tr>${rows}<tr><td><b>TOTAL</b></td><td><b>${r.total.toFixed(2)}</b></td><td><b>${r.notas}</b></td></tr></table><p>Dias com registo: ${r.lista.length} • Média/dia: ${(r.lista.length?r.total/r.lista.length:0).toFixed(2)} €</p></body></html>`;let blob=new Blob([htmlTable],{type:'application/vnd.ms-excel'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='total-entre-datas-'+r.iniS+'_a_'+r.fimS+'.xls';a.click();}
+
+function desenharGrafico(canvasId, labels, valores, cor){
+  let cv=document.getElementById(canvasId); if(!cv) return;
+  let ctx=cv.getContext('2d'); let W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  let max=Math.max(...valores,1); let padL=64, padB=32, padT=34, padR=12;
+  let areaW=W-padL-padR, areaH=H-padT-padB;
+  ctx.strokeStyle='#e9e2d6'; ctx.fillStyle='#8a9a94'; ctx.font='12px system-ui'; ctx.textAlign='right';
+  for(let i=0;i<=4;i++){ let y=padT+areaH-(areaH*i/4); ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke(); ctx.fillText((max*i/4).toFixed(0)+' €', padL-8, y+4); }
+  let n=valores.length; if(!n) return;
+  let bw=Math.min(56, (areaW/n)*0.55);
+  valores.forEach((v,i)=>{ let x=padL+(areaW/n)*i+(areaW/n-bw)/2; let bh=areaH*(v/max); let y=padT+areaH-bh;
+    ctx.fillStyle=cor; ctx.beginPath(); ctx.roundRect(x,y,bw,bh,8); ctx.fill();
+    let txt=v.toFixed(2)+' €'; ctx.font='800 14px system-ui'; let tw=ctx.measureText(txt).width;
+    ctx.fillStyle='rgba(255,255,255,.95)'; ctx.beginPath(); ctx.roundRect(x+bw/2-tw/2-7, y-26, tw+14, 20, 10); ctx.fill();
+    ctx.strokeStyle='#e9e2d6'; ctx.stroke();
+    ctx.fillStyle='#16211e'; ctx.textAlign='center'; ctx.fillText(txt, x+bw/2, y-12);
+    ctx.fillStyle='#16211e'; ctx.font='700 13px system-ui'; ctx.fillText(labels[i], x+bw/2, H-8);
+  });
+}
+function desenharGraficos(pm, pn){
+  // Mensais: do mês mais antigo para o mais recente
+  let meses=[...pm].reverse();
+  desenharGrafico('grafMes', meses.map(r=>r.mes.slice(5,7)+'/'+r.mes.slice(2,4)), meses.map(r=>r.total), '#0d7a6d');
+  document.getElementById('legGrafMes').innerHTML=meses.map(r=>`<span><i class="graf-dot" style="background:#0d7a6d"></i>${r.mes} — ${r.total.toFixed(2)} € • ${r.dias} dia(s)</span>`).join('')||'Sem dados ainda.';
+  let cores=['#0d7a6d','#d9a521','#e07a4f','#5aa63a','#4a7dff','#7c5cd6','#d94f8a'];
+  // Por tipo: desenhar com cores diferentes por barra - usar função manual
+  let cv=document.getElementById('grafNota'); if(cv){
+    let ctx=cv.getContext('2d'); let W=cv.width,H=cv.height; ctx.clearRect(0,0,W,H);
+    let vals=pn.map(r=>r.valor); let max=Math.max(...vals,1); let padL=64,padB=32,padT=34,padR=12; let areaW=W-padL-padR, areaH=H-padT-padB;
+    ctx.strokeStyle='#e9e2d6'; ctx.fillStyle='#8a9a94'; ctx.font='12px system-ui'; ctx.textAlign='right';
+    for(let i=0;i<=4;i++){ let y=padT+areaH-(areaH*i/4); ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke(); ctx.fillText((max*i/4).toFixed(0)+' €',padL-8,y+4); }
+    pn.forEach((r,i)=>{ let bw=Math.min(56,(areaW/pn.length)*0.55); let x=padL+(areaW/pn.length)*i+(areaW/pn.length-bw)/2; let bh=areaH*(r.valor/max); let y=padT+areaH-bh; ctx.fillStyle=cores[i%cores.length]; ctx.beginPath(); ctx.roundRect(x,y,bw,bh,8); ctx.fill();
+    let txt2=r.valor.toFixed(2)+' €'; ctx.font='800 14px system-ui'; let tw2=ctx.measureText(txt2).width;
+    ctx.fillStyle='rgba(255,255,255,.95)'; ctx.beginPath(); ctx.roundRect(x+bw/2-tw2/2-7, y-26, tw2+14, 20, 10); ctx.fill(); ctx.strokeStyle='#e9e2d6'; ctx.stroke();
+    ctx.fillStyle='#16211e'; ctx.textAlign='center'; ctx.fillText(txt2,x+bw/2,y-12); ctx.font='700 13px system-ui'; ctx.fillText(r.nota+'€',x+bw/2,H-8); });
+  }
+  document.getElementById('legGrafNota').innerHTML=pn.map((r,i)=>`<span><i class="graf-dot" style="background:${cores[i%cores.length]}"></i>${r.nota}€ — ${r.valor.toFixed(2)} € • ${r.qtd} raspadinhas</span>`).join('');
+}
+function calcTotais(){let ref=document.getElementById('refData').value||document.getElementById('dia').value;let d=parseDia(ref);let todos=todosIncluindoAtual();let inicio=+document.getElementById('inicioSemana').value;let off=(d.getDay()-inicio+7)%7;let ini=new Date(d);ini.setDate(d.getDate()-off);let fim=new Date(ini);fim.setDate(ini.getDate()+6);let sem=todos.filter(x=>{let xd=parseDia(x.dia);return xd>=ini&&xd<=fim;});let mes=todos.filter(x=>x.dia.slice(0,7)===ref.slice(0,7));let somaSem=somaPeriodo(sem),somaMes=somaPeriodo(mes),somaTotal=somaPeriodo(todos);let notasSem=totalNotasLista(sem),notasMes=totalNotasLista(mes),notasTotal=totalNotasLista(todos);document.getElementById('kpiSemana').textContent=fmt(somaSem);document.getElementById('kpiSemanaDetalhe').textContent=sem.length+' dia(s) • '+notasSem+' raspadinhas';document.getElementById('kpiMes').textContent=fmt(somaMes);document.getElementById('kpiMesDetalhe').textContent=mes.length+' dia(s) • '+notasMes+' raspadinhas';document.getElementById('kpiTotal').textContent=fmt(somaTotal);document.getElementById('kpiTotalDetalhe').textContent=todos.length+' dia(s) no total';document.getElementById('kpiNotas').textContent=notasTotal+' raspadinhas';document.getElementById('kpiNotasDetalhe').textContent='Semana: '+notasSem+' • Mês: '+notasMes;document.getElementById('legendaPeriodo').textContent='Semana: '+dataISO(ini).split('-').reverse().join('/')+' a '+dataISO(fim).split('-').reverse().join('/')+' • Mês: '+ref.slice(5,7)+'/'+ref.slice(0,4);document.getElementById('mediaSemana').textContent=sem.length?fmt(somaSem/sem.length):fmt(0);document.getElementById('mediaSemanaDet').textContent=sem.length?('média de '+sem.length+' dia(s)'):'sem dias nesta semana';document.getElementById('mediaMes').textContent=mes.length?fmt(somaMes/mes.length):fmt(0);document.getElementById('mediaMesDet').textContent=mes.length?('média de '+mes.length+' dia(s)'):'sem dias neste mês';document.getElementById('mediaGeral').textContent=todos.length?fmt(somaTotal/todos.length):fmt(0);document.getElementById('mediaGeralDet').textContent='média de '+todos.length+' dia(s)';document.getElementById('mediaNota').textContent=notasTotal?fmt(somaTotal/notasTotal):fmt(0);document.getElementById('mediaNotaDet').textContent=notasTotal?('média por cada uma das '+notasTotal+' raspadinhas'):'sem raspadinhas';let pm=resumoPorMes(todos),ps=resumoPorSemana(todos),pn=resumoPorNota(todos); desenharGraficos(pm,pn);
+  // Repartição do total geral com percentagens - igual à Diária
+  let colsTot=['#0d7a6d','#d9a521','#e07a4f','#5aa63a','#4a7dff','#7c5cd6','#d94f8a'];
+  let elB=document.getElementById('totalBreakdown');
+  if(elB){
+    document.getElementById('totalGeralHero').textContent=fmt(somaTotal);
+    document.getElementById('totalGeralHeroDet').textContent=notasTotal+' raspadinhas no total • '+todos.length+' dia(s)';
+    elB.innerHTML=pn.map((r,i)=> r.valor ? `<div style="width:${somaTotal?r.valor/somaTotal*100:0}%;background:${colsTot[i]}"></div>` : '').join('');
+    document.getElementById('totalBreakdownLegenda').innerHTML=pn.filter(r=>r.valor).map((r,i)=>{
+      let idx=pn.indexOf(r);
+      return `<span style="display:inline-block;margin:0 10px 4px 0;color:#fff"><span style="color:${colsTot[idx]}">●</span> ${r.nota}€: ${fmt(r.valor)} • ${r.qtd} raspadinhas • ${somaTotal?((r.valor/somaTotal)*100).toFixed(1):0}%</span>`;
+    }).join('') || 'Sem dados ainda.';
+  }
+document.getElementById('tabMediasMes').innerHTML=pm.map(r=>`<tr><td>${r.mes}</td><td>${r.dias}</td><td>${fmt(r.total)}</td><td><b>${fmt(r.media)}</b></td><td>${fmt(r.mediaNota)}</td></tr>`).join('')||'<tr><td colspan=5>—</td></tr>';document.getElementById('tabMediasSemana').innerHTML=ps.map(r=>`<tr><td>${r.ini.split('-').reverse().join('/')} a ${r.fim.split('-').reverse().join('/')}</td><td>${r.dias}</td><td>${fmt(r.total)}</td><td><b>${fmt(r.media)}</b></td></tr>`).join('')||'<tr><td colspan=4>—</td></tr>';document.getElementById('tabTotalMes').innerHTML=pm.map(r=>`<tr><td>${r.mes}</td><td>${r.dias}</td><td><b>${fmt(r.total)}</b></td><td>${r.notas}</td></tr>`).join('')||'<tr><td colspan=4>—</td></tr>';document.getElementById('tabTotalSemana').innerHTML=ps.map(r=>`<tr><td>${r.ini.split('-').reverse().join('/')} a ${r.fim.split('-').reverse().join('/')}</td><td>${r.dias}</td><td><b>${fmt(r.total)}</b></td><td>${r.notas}</td></tr>`).join('')||'<tr><td colspan=4>—</td></tr>';let intervalo=calcIntervalo();let ed=document.getElementById('exportDias');if(ed){ed.textContent=todos.length+' dia(s)';document.getElementById('exportTotal').textContent=fmt(somaTotal);let datas=todos.map(x=>x.dia).sort();document.getElementById('exportPeriodo').textContent=datas.length?datas[0].split('-').reverse().join('/')+' a '+datas[datas.length-1].split('-').reverse().join('/'):'—';}return {ref,sem,mes,todos,somaSem,somaMes,somaTotal,ini,fim,notasTotal,intervalo};}
+function render(){const g=document.getElementById('grid');g.innerHTML='';let total=0,notas=0;denoms.forEach(v=>{let c=counts[v]||0;total+=v*c;notas+=c;g.innerHTML+=`<div class="denom"><div class="coin">${v}€</div><b>${v} €</b><div class="count">${c}</div><div class="muted">${fmt(v*c)}</div><div class="controls"><button class="minus" onclick="chg(${v},-1)">−</button><button class="plus" onclick="chg(${v},1)">+</button></div><input type="number" min="0" value="${c}" onchange="setV(${v},this.value)" style="margin-top:8px"></div>`;});document.getElementById('totalDia').textContent=fmt(total);document.getElementById('totalNotas').textContent=notas+' raspadinhas';document.getElementById('totalNotasTop').textContent=document.getElementById('dia').value.split('-').reverse().join('/');let cols=['#0d7a6d','#d9a521','#e07a4f','#5aa63a','#4a7dff','#7c5cd6','#d94f8a'];let bd=document.getElementById('breakdown');if(bd){bd.innerHTML=denoms.map((v,i)=>{let c=counts[v]||0;let val=v*c;return val?`<div style="width:${total?val/total*100:0}%;background:${cols[i]}"></div>`:'';}).join('');document.getElementById('breakdownLegenda').innerHTML=denoms.filter(v=>counts[v]).map((v,i)=>`<span style="color:${cols[denoms.indexOf(v)]}">●</span> ${v}€: ${total?((v*counts[v]/total)*100).toFixed(0):0}%`).join(' &nbsp; ');}renderHist();calcTotais();}
+function chg(v,d){counts[v]=Math.max(0,(counts[v]||0)+d);render();}
+function setV(v,val){counts[v]=Math.max(0,parseInt(val)||0);render();}
+function limpar(){denoms.forEach(v=>counts[v]=0);render();}
+function guardar(){let total=denoms.reduce((s,v)=>s+v*(counts[v]||0),0);let dia=document.getElementById('dia').value||dataISO(new Date());hist=hist.filter(h=>h.dia!==dia);hist.unshift({dia,counts:{...counts},total});hist.sort((a,b)=>b.dia.localeCompare(a.dia));localStorage.setItem('contagem_hist',JSON.stringify(hist));guardarNoSupabase({dia,counts:{...counts},total});render();alert('Dia '+dia+' guardado: '+fmt(total));}
+function renderHist(){document.getElementById('hist').innerHTML=hist.map((h,i)=>`<tr><td>${h.dia.split('-').reverse().join('/')}</td><td>${denoms.filter(v=>h.counts[v]).map(v=>h.counts[v]+'×'+v+'€').join(' • ')||'—'}</td><td><b>${fmt(h.total)}</b></td><td><button onclick="carregar(${i})">Carregar</button> <button onclick="apagar(${i})">✕</button></td></tr>`).join('')||'<tr><td colspan=4>Sem registos ainda</td></tr>';}
+function carregar(i){let h=hist[i];counts={...h.counts};document.getElementById('dia').value=h.dia;document.getElementById('refData').value=h.dia;mostrarFolha('diaria');render();}
+function apagar(i){if(confirm('Apagar este dia?')){let diaApagar=hist[i]?hist[i].dia:null; hist.splice(i,1);localStorage.setItem('contagem_hist',JSON.stringify(hist));apagarNoSupabase(diaApagar);render();}}
+function mostrarFoto(f){if(!f)return;let u=URL.createObjectURL(f);let p=document.getElementById('preview');p.src=u;p.style.display='block';}
+function removerFoto(){let p=document.getElementById('preview');p.src='';p.style.display='none';document.getElementById('fotoCamera').value='';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function xmlCell(v,type){if(type==='Number')return `<Cell><Data ss:Type="Number">${v}</Data></Cell>`;return `<Cell><Data ss:Type="String">${esc(v)}</Data></Cell>`;}
+function xmlSheet(name,rows){let r=rows.map(row=>`<Row>${row.map(c=>xmlCell(c[1],c[0])).join('')}</Row>`).join('');return `<Worksheet ss:Name="${name}"><Table>${r}</Table></Worksheet>`;}
+function exportarExcel(){let t=calcTotais();let todos=todosIncluindoAtual();let pm=resumoPorMes(todos),ps=resumoPorSemana(todos),pn=resumoPorNota(todos); desenharGraficos(pm,pn);
+  // Repartição do total geral com percentagens - igual à Diária
+  let colsTot=['#0d7a6d','#d9a521','#e07a4f','#5aa63a','#4a7dff','#7c5cd6','#d94f8a'];
+  let elB=document.getElementById('totalBreakdown');
+  if(elB){
+    document.getElementById('totalGeralHero').textContent=fmt(somaTotal);
+    document.getElementById('totalGeralHeroDet').textContent=notasTotal+' raspadinhas no total • '+todos.length+' dia(s)';
+    elB.innerHTML=pn.map((r,i)=> r.valor ? `<div style="width:${somaTotal?r.valor/somaTotal*100:0}%;background:${colsTot[i]}"></div>` : '').join('');
+    document.getElementById('totalBreakdownLegenda').innerHTML=pn.filter(r=>r.valor).map((r,i)=>{
+      let idx=pn.indexOf(r);
+      return `<span style="display:inline-block;margin:0 10px 4px 0;color:#fff"><span style="color:${colsTot[idx]}">●</span> ${r.nota}€: ${fmt(r.valor)} • ${r.qtd} raspadinhas • ${somaTotal?((r.valor/somaTotal)*100).toFixed(1):0}%</span>`;
+    }).join('') || 'Sem dados ainda.';
+  }
+let diaria=[ [['String','Dia'],...denoms.flatMap(v=>[['String',v+'€ Qtd'],['String',v+'€ Total']]),['String','Total Dia'],['String','Total Raspadinhas']] ];todos.forEach(x=>{let row=[['String',x.dia.split('-').reverse().join('/')]];let notas=0;denoms.forEach(v=>{let c=x.counts[v]||0;notas+=c;row.push(['Number',c],['Number',v*c]);});row.push(['Number',x.total],['Number',notas]);diaria.push(row);});let medias=[ [['String','MÉDIAS - RESUMO'],['String','Valor']], [['String','Média/dia - esta semana'],['Number',t.sem.length?(t.somaSem/t.sem.length).toFixed(2):0]], [['String','Média/dia - este mês'],['Number',t.mes.length?(t.somaMes/t.mes.length).toFixed(2):0]], [['String','Média/dia - geral'],['Number',todos.length?(t.somaTotal/todos.length).toFixed(2):0]], [['String','Média/raspadinha'],['Number',t.notasTotal?(t.somaTotal/t.notasTotal).toFixed(2):0]], [], [['String','Média por Mês'],['String','Dias'],['String','Total Mês'],['String','Média/dia'],['String','Média/raspadinha']] ];pm.forEach(r=>medias.push([['String',r.mes],['Number',r.dias],['Number',r.total],['Number',r.media.toFixed(2)],['Number',r.mediaNota.toFixed(2)]]));medias.push([], [['String','Média por Semana'],['String','Dias'],['String','Total Semana'],['String','Média/dia']]);ps.forEach(r=>medias.push([['String',r.ini.split('-').reverse().join('/')+' a '+r.fim.split('-').reverse().join('/')],['Number',r.dias],['Number',r.total],['Number',r.media.toFixed(2)]]));medias.push([], [['String','Média por Raspadinha'],['String','Qtd Total'],['String','Valor Total'],['String','Média/dia (qtd)']]);pn.forEach(r=>medias.push([['String',r.nota+' €'],['Number',r.qtd],['Number',r.valor],['Number',r.mediaDia.toFixed(2)]]));let total=[ [['String','TOTAL - RESUMO'],['String','Valor'],['String','Dias'],['String','Raspadinhas']], [['String','Total esta semana'],['Number',t.somaSem],['Number',t.sem.length],['Number',totalNotasLista(t.sem)]], [['String','Total este mês'],['Number',t.somaMes],['Number',t.mes.length],['Number',totalNotasLista(t.mes)]], [['String','Total geral'],['Number',t.somaTotal],['Number',todos.length],['Number',t.notasTotal]], [], [['String','Total entre datas'],['String','Valor']], [['String',t.intervalo.iniS.split('-').reverse().join('/')+' a '+t.intervalo.fimS.split('-').reverse().join('/')],['Number',t.intervalo.total]], [], [['String','Total por Mês'],['String','Dias'],['String','Total'],['String','Raspadinhas']] ];pm.forEach(r=>total.push([['String',r.mes],['Number',r.dias],['Number',r.total],['Number',r.notas]]));total.push([], [['String','Total por Semana'],['String','Dias'],['String','Total'],['String','Raspadinhas']]);ps.forEach(r=>total.push([['String',r.ini.split('-').reverse().join('/')+' a '+r.fim.split('-').reverse().join('/')],['Number',r.dias],['Number',r.total],['Number',r.notas]]));total.push([], [['String','Total por Raspadinha'],['String','Qtd Total'],['String','Valor Total'],['String','% do Total']]);pn.forEach(r=>total.push([['String',r.nota+' €'],['Number',r.qtd],['Number',r.valor],['Number',t.somaTotal?((r.valor/t.somaTotal)*100).toFixed(1):0]]));let xml=`<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${xmlSheet('Diária',diaria)}${xmlSheet('Médias',medias)}${xmlSheet('Total',total)}</Workbook>`;let blob=new Blob([xml],{type:'application/vnd.ms-excel'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='contagem-diaria-raspadinhas.xls';a.click();}
+function exportarCSV(){let todos=todosIncluindoAtual();let linhas=[['FOLHA DIÁRIA'],['Dia',...denoms.flatMap(v=>[v+'€ (qtd)',v+'€ (€)']),'Total (€)','Total raspadinhas']];todos.forEach(x=>{let r=[x.dia.split('-').reverse().join('/')];let notas=0;denoms.forEach(v=>{let c=x.counts[v]||0;notas+=c;r.push(c,(v*c).toFixed(2).replace('.',','));});r.push(x.total.toFixed(2).replace('.',','),notas);linhas.push(r);});linhas.push([]);linhas.push(['FOLHA MÉDIAS']);linhas.push(['Mês','Dias','Total (€)','Média/dia (€)']);resumoPorMes(todos).forEach(r=>linhas.push([r.mes,r.dias,r.total.toFixed(2).replace('.',','),r.media.toFixed(2).replace('.',',')]));linhas.push([]);linhas.push(['FOLHA TOTAL']);linhas.push(['Mês','Dias','Total (€)','Raspadinhas']);resumoPorMes(todos).forEach(r=>linhas.push([r.mes,r.dias,r.total.toFixed(2).replace('.',','),r.notas]));let iv=calcIntervalo();linhas.push([]);linhas.push(['TOTAL ENTRE DATAS',iv.iniS.split('-').reverse().join('/')+' a '+iv.fimS.split('-').reverse().join('/'),iv.total.toFixed(2).replace('.',','),iv.notas]);let csv='\uFEFF'+linhas.map(r=>r.join(';')).join('\n');let blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='contagem-diaria-raspadinhas.csv';a.click();}
+function exportarResumoMensal(){let ref=document.getElementById('refData').value||document.getElementById('dia').value;let mes=ref.slice(0,7);let todos=todosIncluindoAtual().filter(x=>x.dia.slice(0,7)===mes).sort((a,b)=>a.dia.localeCompare(b.dia));if(!todos.length){alert('Sem registos em '+mes);return;}let rows=todos.map(x=>`<tr><td>${x.dia.split('-').reverse().join('/')}</td><td>${x.total.toFixed(2)}</td><td>${denoms.reduce((s,v)=>s+(x.counts[v]||0),0)}</td></tr>`).join('');let total=todos.reduce((s,x)=>s+x.total,0);let htmlTable=`<html><head><meta charset="utf-8"></head><body><h2>Resumo Mensal ${mes}</h2><table border="1"><tr><th>Dia</th><th>Total</th><th>Raspadinhas</th></tr>${rows}<tr><td><b>TOTAL MÊS</b></td><td><b>${total.toFixed(2)}</b></td><td><b>${todos.reduce((s,x)=>s+denoms.reduce((a,v)=>a+(x.counts[v]||0),0),0)}</b></td></tr></table><p>Dias: ${todos.length} • Média/dia: ${(total/todos.length).toFixed(2)} €</p></body></html>`;let blob=new Blob([htmlTable],{type:'application/vnd.ms-excel'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resumo-mensal-'+mes+'.xls';a.click();}
+function exportar(){let t=hist.map(h=>h.dia.split('-').reverse().join('/')+' — '+fmt(h.total)).join('\n');navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));}
+document.getElementById('fotoCamera').addEventListener('change',e=>mostrarFoto(e.target.files[0]));
+document.getElementById('refData').addEventListener('change',calcTotais);
+document.getElementById('inicioSemana').addEventListener('change',calcTotais);
+document.getElementById('dataInicio').addEventListener('change',calcTotais);
+document.getElementById('dataFim').addEventListener('change',calcTotais);
+document.getElementById('dia').addEventListener('change',()=>{document.getElementById('refData').value=document.getElementById('dia').value;render();});
+render();
+if(!SUPABASE_URL || !SUPABASE_KEY) document.getElementById('avisoSheets').style.display='block';
+// Supabase é rápido: vai buscar 1s depois de abrir e depois de 15 em 15s, sempre em segundo plano, sem travar.
+setTimeout(carregarDoSupabase, 1000);
+setInterval(carregarDoSupabase, 15000);
+</script></body></html>
