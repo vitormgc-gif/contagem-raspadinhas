@@ -172,154 +172,8 @@ function calcIntervalo(){let iniS=document.getElementById('dataInicio').value,fi
 function atalhoIntervalo(tipo){let hoje=new Date();let ini=new Date(hoje),fim=new Date(hoje);if(tipo==='semana'){let off=(hoje.getDay()-1+7)%7;ini.setDate(hoje.getDate()-off);fim.setDate(ini.getDate()+6);}else if(tipo==='mes'){ini=new Date(hoje.getFullYear(),hoje.getMonth(),1);fim=new Date(hoje.getFullYear(),hoje.getMonth()+1,0);}else if(tipo==='7'){ini.setDate(hoje.getDate()-6);}else if(tipo==='30'){ini.setDate(hoje.getDate()-29);}else if(tipo==='tudo'){let todos=todosIncluindoAtual();if(!todos.length)return;let ds=todos.map(x=>x.dia).sort();ini=parseDia(ds[0]);fim=parseDia(ds[ds.length-1]);}document.getElementById('dataInicio').value=dataISO(ini);document.getElementById('dataFim').value=dataISO(fim);calcTotais();}
 function copiarIntervalo(){let r=calcIntervalo();let t='Total entre '+r.iniS.split('-').reverse().join('/')+' e '+r.fimS.split('-').reverse().join('/')+' — '+fmt(r.total)+' ('+r.lista.length+' dia(s), '+r.notas+' raspadinhas)\n'+r.lista.map(x=>x.dia.split('-').reverse().join('/')+' — '+fmt(x.total)).join('\n');navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));}
 function exportarIntervalo(){let r=calcIntervalo();if(!r.lista.length){alert('Sem dias neste período.');return;}let rows=r.lista.map(x=>`<tr><td>${x.dia.split('-').reverse().join('/')}</td><td>${x.total.toFixed(2)}</td><td>${denoms.reduce((s,v)=>s+(x.counts[v]||0),0)}</td></tr>`).join('');let htmlTable=`<html><head><meta charset="utf-8">
-<style>
-#modalLer{position:fixed;inset:0;background:#0b1a18;z-index:99;display:none;flex-direction:column}
-#modalLer.aberto{display:flex}
-#videoLer{width:100%;flex:1;object-fit:cover;background:#000}
-.guias{position:absolute;inset:0;pointer-events:none}
-.guia-linha{position:absolute;top:27%;height:69%;width:13.2%;border:1.5px dashed rgba(255,255,255,.95);border-radius:8px;display:flex;align-items:flex-start;justify-content:center;padding-top:6px;color:#fff;font-weight:800;text-shadow:0 1px 4px #000;font-size:13px;background:rgba(0,0,0,.08)}
-#resultadoLer{background:#fff;border-radius:14px;padding:12px;margin:10px}
-.passo-linha{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #eee}
-.passo-linha b{width:44px}
-.passo-linha .conta{font-size:20px;font-weight:900;min-width:36px;text-align:center}
-</style>
+
 </head><body><h2>Total entre ${r.iniS.split('-').reverse().join('/')} e ${r.fimS.split('-').reverse().join('/')}</h2><table border="1"><tr><th>Dia</th><th>Total</th><th>Raspadinhas</th></tr>${rows}<tr><td><b>TOTAL</b></td><td><b>${r.total.toFixed(2)}</b></td><td><b>${r.notas}</b></td></tr></table><p>Dias com registo: ${r.lista.length} • Média/dia: ${(r.lista.length?r.total/r.lista.length:0).toFixed(2)} €</p>
-<div id="modalLer">
-  <div style="padding:12px;color:#fff;display:flex;justify-content:space-between;align-items:center"><b>📷 Ler folha de riscos</b><button id="fecharLer" style="background:#fff;border:0;border-radius:999px;padding:8px 12px;font-weight:800">✕ Fechar</button></div>
-  <div style="position:relative;flex:1;background:#000;overflow:hidden">
-    <video id="videoLer" autoplay playsinline></video>
-    <canvas id="canvasLer" style="display:none"></canvas>
-    <div class="guias" id="guiasLer"></div>
-  </div>
-  <div style="padding:12px;color:#fff;font-size:13px;line-height:1.4">Alinha a folha dentro das caixas. Cada <b>coluna</b> é uma categoria, da esquerda para a direita: <b>1€, 2€, 3€, 5€, 10€, 15€, 20€</b>. Alinha o cabeçalho 1€…20€ com o topo das caixas. Boa luz, telemóvel direito, sem sombras.</div>
-  <div style="padding:0 12px 12px;display:flex;gap:8px">
-    <button id="capturarLer" style="flex:1;background:#12b5a0;color:#fff;border:0;border-radius:12px;padding:14px;font-weight:900;font-size:16px">📸 Capturar e contar</button>
-    <button id="usarLer" style="flex:1;background:#ffb703;border:0;border-radius:12px;padding:14px;font-weight:900;display:none">✅ Usar estes números</button>
-  </div>
-  <div id="resultadoLer" style="display:none"></div>
-</div>
-<script>
-const DENOMS_LER=[1,2,3,5,10,15,20];
-function preencherContagem(arr){
-  DENOMS_LER.forEach((den,i)=>{ try{ counts[den]=Math.max(0, parseInt(arr[i])||0); }catch(e){} });
-  try{ render(); }catch(e){}
-  try{ document.getElementById('dia').value = document.getElementById('dia').value || new Date().toISOString().slice(0,10); }catch(e){}
-}
-let streamLer=null, contagemLer=[0,0,0,0,0,0,0];
-function montarGuias(){
-  const g=document.getElementById('guiasLer'); g.innerHTML='';
-  DENOMS_LER.forEach((d,i)=>{
-    const div=document.createElement('div'); div.className='guia-linha';
-    div.style.left=(2.5+i*13.9)+'%'; div.textContent=d+'€';
-    g.appendChild(div);
-  });
-}
-async function abrirLer(){
-  montarGuias();
-  document.getElementById('modalLer').classList.add('aberto');
-  document.getElementById('resultadoLer').style.display='none';
-  document.getElementById('usarLer').style.display='none';
-  try{
-    streamLer=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-    document.getElementById('videoLer').srcObject=streamLer;
-  }catch(e){ alert('Não consegui abrir a câmara. Verifica se deste permissão à câmara neste site.'); }
-}
-function fecharLer(){
-  document.getElementById('modalLer').classList.remove('aberto');
-  if(streamLer){ streamLer.getTracks().forEach(t=>t.stop()); streamLer=null; }
-}
-// Contagem POR COLUNAS: cada coluna = uma categoria. Ignora as linhas da grelha (compridas).
-function contarRiscos(){
-  const video=document.getElementById('videoLer');
-  const canvas=document.getElementById('canvasLer');
-  canvas.width=video.videoWidth||640; canvas.height=video.videoHeight||480;
-  const ctx=canvas.getContext('2d'); ctx.drawImage(video,0,0,canvas.width,canvas.height);
-  const img=ctx.getImageData(0,0,canvas.width,canvas.height);
-  const d=img.data, W=canvas.width, H=canvas.height;
-  contagemLer=[];
-  // Tabela: começa a ~27% (depois do Dia:) e vai até ~98%
-  const y0=Math.floor(H*0.27), y1=Math.floor(H*0.985);
-  for(let c=0; c<7; c++){
-    const x0=Math.floor(W*(0.025+c*0.139)), x1=Math.floor(W*(0.025+c*0.139+0.132));
-    const w=x1-x0, hh=y1-y0;
-    const bin=new Uint8Array(w*hh);
-    for(let y=0;y<hh;y++) for(let x=0;x<w;x++){
-      const idx=((y0+y)*W+(x0+x))*4;
-      const g=(d[idx]+d[idx+1]+d[idx+2])/3;
-      bin[y*w+x]= g<115 ? 1:0;
-    }
-    const visto=new Uint8Array(w*hh); let comp=0;
-    const stack=[];
-    for(let i=0;i<bin.length;i++){
-      if(!bin[i]||visto[i]) continue;
-      let tam=0, minX=9999,maxX=-1,minY=9999,maxY=-1;
-      stack.length=0; stack.push(i); visto[i]=1;
-      while(stack.length){
-        const cur=stack.pop(); tam++;
-        const cx=cur%w, cy=(cur/w)|0;
-        if(cx<minX)minX=cx; if(cx>maxX)maxX=cx; if(cy<minY)minY=cy; if(cy>maxY)maxY=cy;
-        const viz=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]];
-        for(const [dx,dy] of viz){
-          const nx=cx+dx, ny=cy+dy;
-          if(nx<0||ny<0||nx>=w||ny>=hh) continue;
-          const ni=ny*w+nx;
-          if(bin[ni]&&!visto[ni]){ visto[ni]=1; stack.push(ni); }
-        }
-      }
-      const bw=maxX-minX+1, bh=maxY-minY+1;
-      // Ignora grelha: linhas muito compridas (largura quase toda a coluna ou altura quase toda a tabela) e ruído muito pequeno
-      const eGrelha = (bw > w*0.7) || (bh > hh*0.6) || (bw>60 && bh<4) || (bh>200 && bw<4);
-      const eRisco = tam>25 && tam<4000 && bw>=2 && bw<=45 && bh>=10 && bh<=180 && !eGrelha;
-      if(eRisco) comp++;
-    }
-    // Correção por área: se muitos riscos se tocam, os componentes fundem-se. Área escura / ~180px por risco dá estimativa.
-    let area=0; for(let i=0;i<bin.length;i++) if(bin[i]) area++;
-    // Tira a área da grelha: aprox. 2 linhas verticais + ~20 horizontais
-    const areaGrelha = (w*2*2) + (hh*2*2) + (w*20*1.5);
-    const areaRiscos = Math.max(0, area - areaGrelha);
-    const porArea = Math.round(areaRiscos/170);
-    // Usa o maior, mas sem disparar: no máximo comp+6
-    contagemLer.push(Math.max(comp, Math.min(porArea, comp+6)));
-  }
-  mostrarResultadoLer();
-}
-function mostrarResultadoLer(){
-  const el=document.getElementById('resultadoLer'); el.style.display='block';
-  document.getElementById('usarLer').style.display='block';
-  let html='<b>Contei isto — confirma e corrige se for preciso:</b><div style="font-size:12px;color:#666">Toca em − / + para corrigir. Depois carrega em “Usar estes números”.</div>';
-  DENOMS_LER.forEach((den,i)=>{
-    html+='<div class="passo-linha"><b>'+den+'€</b><button onclick="ajustarLer('+i+',-1)" style="padding:6px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:18px">−</button><span class="conta" id="contaLer'+i+'">'+contagemLer[i]+'</span><button onclick="ajustarLer('+i+',1)" style="padding:6px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:18px">+</button><span style="font-size:12px;color:#888">riscos</span></div>';
-  });
-  html+='<div style="font-size:12px;color:#888;margin-top:8px">Se a contagem estiver muito errada: aproxima mais, melhora a luz, e tenta outra vez. A contagem é uma ajuda — tu confirmas sempre.</div>';
-  el.innerHTML=html;
-  el.scrollIntoView({behavior:'smooth'});
-}
-window.ajustarLer=function(i,delta){ contagemLer[i]=Math.max(0, contagemLer[i]+delta); const s=document.getElementById('contaLer'+i); if(s) s.textContent=contagemLer[i]; };
-document.addEventListener('click',e=>{
-  if(e.target && e.target.id==='btnLerFolha'){ abrirLer(); }
-  if(e.target && e.target.id==='fecharLer'){ fecharLer(); }
-  if(e.target && e.target.id==='capturarLer'){ contarRiscos(); }
-  if(e.target && e.target.id==='usarLer'){
-    // Preencher a folha Diária com a contagem - usa a estrutura existente: procura inputs/quantidades por denominação
-    try{
-      // Tenta API existente se houver
-      if(typeof preencherContagem==='function'){ preencherContagem(contagemLer); }
-      else{
-        // Fallback: procura elementos com data-valor ou data-denom e define valor
-        DENOMS_LER.forEach((den,i)=>{
-          const el=document.querySelector('[data-valor="'+den+'"]')||document.querySelector('[data-denom="'+den+'"]')||document.querySelector('#q-'+den);
-          if(el){ if(el.tagName==='INPUT') el.value=contagemLer[i]; else el.textContent=contagemLer[i]; el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); }
-        });
-        // Guarda na variável global que a app usa, se existir
-        if(typeof dados!=='undefined' && dados){ /* não força */ }
-      }
-    }catch(err){ alert('Contagem feita: '+contagemLer.join(', ')+' — mas não consegui preencher sozinha. Escreve estes números nos quadrados.'); }
-    fecharLer();
-    // Volta à folha Diária e mostra aviso
-    alert('Números da folha colocados na Diária: '+DENOMS_LER.map((d,i)=>d+'€: '+contagemLer[i]).join(' · ')+' — confirma e carrega em Guardar.');
-  }
-});
-</script>
 </body></html>`;let blob=new Blob([htmlTable],{type:'application/vnd.ms-excel'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='total-entre-datas-'+r.iniS+'_a_'+r.fimS+'.xls';a.click();}
 
 function desenharGrafico(canvasId, labels, valores, cor){
@@ -403,143 +257,8 @@ function exportarExcel(){let t=calcTotais();let todos=todosIncluindoAtual();let 
 let diaria=[ [['String','Dia'],...denoms.flatMap(v=>[['String',v+'€ Qtd'],['String',v+'€ Total']]),['String','Total Dia'],['String','Total Raspadinhas']] ];todos.forEach(x=>{let row=[['String',x.dia.split('-').reverse().join('/')]];let notas=0;denoms.forEach(v=>{let c=x.counts[v]||0;notas+=c;row.push(['Number',c],['Number',v*c]);});row.push(['Number',x.total],['Number',notas]);diaria.push(row);});let medias=[ [['String','MÉDIAS - RESUMO'],['String','Valor']], [['String','Média/dia - esta semana'],['Number',t.sem.length?(t.somaSem/t.sem.length).toFixed(2):0]], [['String','Média/dia - este mês'],['Number',t.mes.length?(t.somaMes/t.mes.length).toFixed(2):0]], [['String','Média/dia - geral'],['Number',todos.length?(t.somaTotal/todos.length).toFixed(2):0]], [['String','Média/raspadinha'],['Number',t.notasTotal?(t.somaTotal/t.notasTotal).toFixed(2):0]], [], [['String','Média por Mês'],['String','Dias'],['String','Total Mês'],['String','Média/dia'],['String','Média/raspadinha']] ];pm.forEach(r=>medias.push([['String',r.mes],['Number',r.dias],['Number',r.total],['Number',r.media.toFixed(2)],['Number',r.mediaNota.toFixed(2)]]));medias.push([], [['String','Média por Semana'],['String','Dias'],['String','Total Semana'],['String','Média/dia']]);ps.forEach(r=>medias.push([['String',r.ini.split('-').reverse().join('/')+' a '+r.fim.split('-').reverse().join('/')],['Number',r.dias],['Number',r.total],['Number',r.media.toFixed(2)]]));medias.push([], [['String','Média por Raspadinha'],['String','Qtd Total'],['String','Valor Total'],['String','Média/dia (qtd)']]);pn.forEach(r=>medias.push([['String',r.nota+' €'],['Number',r.qtd],['Number',r.valor],['Number',r.mediaDia.toFixed(2)]]));let total=[ [['String','TOTAL - RESUMO'],['String','Valor'],['String','Dias'],['String','Raspadinhas']], [['String','Total esta semana'],['Number',t.somaSem],['Number',t.sem.length],['Number',totalNotasLista(t.sem)]], [['String','Total este mês'],['Number',t.somaMes],['Number',t.mes.length],['Number',totalNotasLista(t.mes)]], [['String','Total geral'],['Number',t.somaTotal],['Number',todos.length],['Number',t.notasTotal]], [], [['String','Total entre datas'],['String','Valor']], [['String',t.intervalo.iniS.split('-').reverse().join('/')+' a '+t.intervalo.fimS.split('-').reverse().join('/')],['Number',t.intervalo.total]], [], [['String','Total por Mês'],['String','Dias'],['String','Total'],['String','Raspadinhas']] ];pm.forEach(r=>total.push([['String',r.mes],['Number',r.dias],['Number',r.total],['Number',r.notas]]));total.push([], [['String','Total por Semana'],['String','Dias'],['String','Total'],['String','Raspadinhas']]);ps.forEach(r=>total.push([['String',r.ini.split('-').reverse().join('/')+' a '+r.fim.split('-').reverse().join('/')],['Number',r.dias],['Number',r.total],['Number',r.notas]]));total.push([], [['String','Total por Raspadinha'],['String','Qtd Total'],['String','Valor Total'],['String','% do Total']]);pn.forEach(r=>total.push([['String',r.nota+' €'],['Number',r.qtd],['Number',r.valor],['Number',t.somaTotal?((r.valor/t.somaTotal)*100).toFixed(1):0]]));let xml=`<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${xmlSheet('Diária',diaria)}${xmlSheet('Médias',medias)}${xmlSheet('Total',total)}</Workbook>`;let blob=new Blob([xml],{type:'application/vnd.ms-excel'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='contagem-diaria-raspadinhas.xls';a.click();}
 function exportarCSV(){let todos=todosIncluindoAtual();let linhas=[['FOLHA DIÁRIA'],['Dia',...denoms.flatMap(v=>[v+'€ (qtd)',v+'€ (€)']),'Total (€)','Total raspadinhas']];todos.forEach(x=>{let r=[x.dia.split('-').reverse().join('/')];let notas=0;denoms.forEach(v=>{let c=x.counts[v]||0;notas+=c;r.push(c,(v*c).toFixed(2).replace('.',','));});r.push(x.total.toFixed(2).replace('.',','),notas);linhas.push(r);});linhas.push([]);linhas.push(['FOLHA MÉDIAS']);linhas.push(['Mês','Dias','Total (€)','Média/dia (€)']);resumoPorMes(todos).forEach(r=>linhas.push([r.mes,r.dias,r.total.toFixed(2).replace('.',','),r.media.toFixed(2).replace('.',',')]));linhas.push([]);linhas.push(['FOLHA TOTAL']);linhas.push(['Mês','Dias','Total (€)','Raspadinhas']);resumoPorMes(todos).forEach(r=>linhas.push([r.mes,r.dias,r.total.toFixed(2).replace('.',','),r.notas]));let iv=calcIntervalo();linhas.push([]);linhas.push(['TOTAL ENTRE DATAS',iv.iniS.split('-').reverse().join('/')+' a '+iv.fimS.split('-').reverse().join('/'),iv.total.toFixed(2).replace('.',','),iv.notas]);let csv='\uFEFF'+linhas.map(r=>r.join(';')).join('\n');let blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='contagem-diaria-raspadinhas.csv';a.click();}
 function exportarResumoMensal(){let ref=document.getElementById('refData').value||document.getElementById('dia').value;let mes=ref.slice(0,7);let todos=todosIncluindoAtual().filter(x=>x.dia.slice(0,7)===mes).sort((a,b)=>a.dia.localeCompare(b.dia));if(!todos.length){alert('Sem registos em '+mes);return;}let rows=todos.map(x=>`<tr><td>${x.dia.split('-').reverse().join('/')}</td><td>${x.total.toFixed(2)}</td><td>${denoms.reduce((s,v)=>s+(x.counts[v]||0),0)}</td></tr>`).join('');let total=todos.reduce((s,x)=>s+x.total,0);let htmlTable=`<html><head><meta charset="utf-8">
-<style>
-#modalLer{position:fixed;inset:0;background:#0b1a18;z-index:99;display:none;flex-direction:column}
-#modalLer.aberto{display:flex}
-#videoLer{width:100%;flex:1;object-fit:cover;background:#000}
-.guias{position:absolute;inset:0;pointer-events:none}
-.guia-linha{position:absolute;top:27%;height:69%;width:13.2%;border:1.5px dashed rgba(255,255,255,.95);border-radius:8px;display:flex;align-items:flex-start;justify-content:center;padding-top:6px;color:#fff;font-weight:800;text-shadow:0 1px 4px #000;font-size:13px;background:rgba(0,0,0,.08)}
-#resultadoLer{background:#fff;border-radius:14px;padding:12px;margin:10px}
-.passo-linha{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #eee}
-.passo-linha b{width:44px}
-.passo-linha .conta{font-size:20px;font-weight:900;min-width:36px;text-align:center}
-</style>
+
 </head><body><h2>Resumo Mensal ${mes}</h2><table border="1"><tr><th>Dia</th><th>Total</th><th>Raspadinhas</th></tr>${rows}<tr><td><b>TOTAL MÊS</b></td><td><b>${total.toFixed(2)}</b></td><td><b>${todos.reduce((s,x)=>s+denoms.reduce((a,v)=>a+(x.counts[v]||0),0),0)}</b></td></tr></table><p>Dias: ${todos.length} • Média/dia: ${(total/todos.length).toFixed(2)} €</p>
-<div id="modalLer">
-  <div style="padding:12px;color:#fff;display:flex;justify-content:space-between;align-items:center"><b>📷 Ler folha de riscos</b><button id="fecharLer" style="background:#fff;border:0;border-radius:999px;padding:8px 12px;font-weight:800">✕ Fechar</button></div>
-  <div style="position:relative;flex:1;background:#000;overflow:hidden">
-    <video id="videoLer" autoplay playsinline></video>
-    <canvas id="canvasLer" style="display:none"></canvas>
-    <div class="guias" id="guiasLer"></div>
-  </div>
-  <div style="padding:12px;color:#fff;font-size:13px;line-height:1.4">Alinha a folha dentro das caixas. Cada <b>coluna</b> é uma categoria, da esquerda para a direita: <b>1€, 2€, 3€, 5€, 10€, 15€, 20€</b>. Alinha o cabeçalho 1€…20€ com o topo das caixas. Boa luz, telemóvel direito, sem sombras.</div>
-  <div style="padding:0 12px 12px;display:flex;gap:8px">
-    <button id="capturarLer" style="flex:1;background:#12b5a0;color:#fff;border:0;border-radius:12px;padding:14px;font-weight:900;font-size:16px">📸 Capturar e contar</button>
-    <button id="usarLer" style="flex:1;background:#ffb703;border:0;border-radius:12px;padding:14px;font-weight:900;display:none">✅ Usar estes números</button>
-  </div>
-  <div id="resultadoLer" style="display:none"></div>
-</div>
-<script>
-const DENOMS_LER=[1,2,3,5,10,15,20];
-let streamLer=null, contagemLer=[0,0,0,0,0,0,0];
-function montarGuias(){
-  const g=document.getElementById('guiasLer'); g.innerHTML='';
-  DENOMS_LER.forEach((d,i)=>{
-    const div=document.createElement('div'); div.className='guia-linha';
-    div.style.top=(4+i*13.5)+'%'; div.textContent=d+'€  —  riscos aqui';
-    g.appendChild(div);
-  });
-}
-async function abrirLer(){
-  montarGuias();
-  document.getElementById('modalLer').classList.add('aberto');
-  document.getElementById('resultadoLer').style.display='none';
-  document.getElementById('usarLer').style.display='none';
-  try{
-    streamLer=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-    document.getElementById('videoLer').srcObject=streamLer;
-  }catch(e){ alert('Não consegui abrir a câmara. Verifica se deste permissão à câmara neste site.'); }
-}
-function fecharLer(){
-  document.getElementById('modalLer').classList.remove('aberto');
-  if(streamLer){ streamLer.getTracks().forEach(t=>t.stop()); streamLer=null; }
-}
-// Contagem simples por componentes: conta manchas escuras separadas em cada faixa
-function contarRiscos(){
-  const video=document.getElementById('videoLer');
-  const canvas=document.getElementById('canvasLer');
-  canvas.width=video.videoWidth||640; canvas.height=video.videoHeight||480;
-  const ctx=canvas.getContext('2d'); ctx.drawImage(video,0,0,canvas.width,canvas.height);
-  const img=ctx.getImageData(0,0,canvas.width,canvas.height);
-  const d=img.data, W=canvas.width, H=canvas.height;
-  contagemLer=[];
-  for(let f=0; f<7; f++){
-    // faixa: 4% a 98% vertical, mesma lógica das guias
-    const y0=Math.floor(H*(0.04+f*0.135)), y1=Math.floor(H*(0.04+f*0.135+0.11));
-    const x0=Math.floor(W*0.06), x1=Math.floor(W*0.94);
-    // binarizar: pixel escuro = risco
-    const w=x1-x0, h=y1-y0;
-    const bin=new Uint8Array(w*h);
-    for(let y=0;y<h;y++) for(let x=0;x<w;x++){
-      const idx=((y0+y)*W+(x0+x))*4;
-      const g=(d[idx]+d[idx+1]+d[idx+2])/3;
-      bin[y*w+x]= g<110 ? 1:0;
-    }
-    // componentes ligados (flood fill simplificado)
-    const visto=new Uint8Array(w*h); let comp=0;
-    const stack=[];
-    for(let i=0;i<bin.length;i++){
-      if(!bin[i]||visto[i]) continue;
-      // só conta manchas com algum tamanho (ignora ruído)
-      let tam=0; stack.length=0; stack.push(i); visto[i]=1;
-      while(stack.length){
-        const cur=stack.pop(); tam++;
-        const cx=cur%w, cy=(cur/w)|0;
-        const viz=[[1,0],[-1,0],[0,1],[0,-1]];
-        for(const [dx,dy] of viz){
-          const nx=cx+dx, ny=cy+dy;
-          if(nx<0||ny<0||nx>=w||ny>=h) continue;
-          const ni=ny*w+nx;
-          if(bin[ni]&&!visto[ni]){ visto[ni]=1; stack.push(ni); }
-        }
-      }
-      if(tam>30) comp++;
-    }
-    // Cada risco costuma ser 1 mancha. Se o risco de grupo (diagonal) tocar nos outros, conta como 1 grupo de 5 - corrigimos: se comp for muito pequeno face à área escura, estimamos por área
-    let area=0; for(let i=0;i<bin.length;i++) if(bin[i]) area++;
-    // Heurística: um risco ocupa ~ 120-400px nesta escala. Usa o maior entre comp e área/250, para não sub-contar grupos ligados
-    const porArea=Math.round(area/280);
-    contagemLer.push(Math.max(comp, Math.min(porArea, comp+4)));
-  }
-  mostrarResultadoLer();
-}
-function mostrarResultadoLer(){
-  const el=document.getElementById('resultadoLer'); el.style.display='block';
-  document.getElementById('usarLer').style.display='block';
-  let html='<b>Contei isto — confirma e corrige se for preciso:</b><div style="font-size:12px;color:#666">Toca em − / + para corrigir. Depois carrega em “Usar estes números”.</div>';
-  DENOMS_LER.forEach((den,i)=>{
-    html+='<div class="passo-linha"><b>'+den+'€</b><button onclick="ajustarLer('+i+',-1)" style="padding:6px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:18px">−</button><span class="conta" id="contaLer'+i+'">'+contagemLer[i]+'</span><button onclick="ajustarLer('+i+',1)" style="padding:6px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:18px">+</button><span style="font-size:12px;color:#888">riscos</span></div>';
-  });
-  html+='<div style="font-size:12px;color:#888;margin-top:8px">Se a contagem estiver muito errada: aproxima mais, melhora a luz, e tenta outra vez. A contagem é uma ajuda — tu confirmas sempre.</div>';
-  el.innerHTML=html;
-  el.scrollIntoView({behavior:'smooth'});
-}
-window.ajustarLer=function(i,delta){ contagemLer[i]=Math.max(0, contagemLer[i]+delta); const s=document.getElementById('contaLer'+i); if(s) s.textContent=contagemLer[i]; };
-document.addEventListener('click',e=>{
-  if(e.target && e.target.id==='btnLerFolha'){ abrirLer(); }
-  if(e.target && e.target.id==='fecharLer'){ fecharLer(); }
-  if(e.target && e.target.id==='capturarLer'){ contarRiscos(); }
-  if(e.target && e.target.id==='usarLer'){
-    // Preencher a folha Diária com a contagem - usa a estrutura existente: procura inputs/quantidades por denominação
-    try{
-      // Tenta API existente se houver
-      if(typeof preencherContagem==='function'){ preencherContagem(contagemLer); }
-      else{
-        // Fallback: procura elementos com data-valor ou data-denom e define valor
-        DENOMS_LER.forEach((den,i)=>{
-          const el=document.querySelector('[data-valor="'+den+'"]')||document.querySelector('[data-denom="'+den+'"]')||document.querySelector('#q-'+den);
-          if(el){ if(el.tagName==='INPUT') el.value=contagemLer[i]; else el.textContent=contagemLer[i]; el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); }
-        });
-        // Guarda na variável global que a app usa, se existir
-        if(typeof dados!=='undefined' && dados){ /* não força */ }
-      }
-    }catch(err){ alert('Contagem feita: '+contagemLer.join(', ')+' — mas não consegui preencher sozinha. Escreve estes números nos quadrados.'); }
-    fecharLer();
-    // Volta à folha Diária e mostra aviso
-    alert('Números da folha colocados na Diária: '+DENOMS_LER.map((d,i)=>d+'€: '+contagemLer[i]).join(' · ')+' — confirma e carrega em Guardar.');
-  }
-});
-</script>
 </body></html>`;let blob=new Blob([htmlTable],{type:'application/vnd.ms-excel'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resumo-mensal-'+mes+'.xls';a.click();}
 function exportar(){let t=hist.map(h=>h.dia.split('-').reverse().join('/')+' — '+fmt(h.total)).join('\n');navigator.clipboard.writeText(t).then(()=>alert('Copiado!'));}
 document.getElementById('fotoCamera').addEventListener('change',e=>mostrarFoto(e.target.files[0]));
@@ -576,7 +295,7 @@ function montarGuias(){
   const g=document.getElementById('guiasLer'); g.innerHTML='';
   DENOMS_LER.forEach((d,i)=>{
     const div=document.createElement('div'); div.className='guia-linha';
-    div.style.top=(4+i*13.5)+'%'; div.textContent=d+'€  —  riscos aqui';
+    div.style.left=(2.5+i*13.9)+'%'; div.textContent=d+'€';
     g.appendChild(div);
   });
 }
@@ -594,7 +313,7 @@ function fecharLer(){
   document.getElementById('modalLer').classList.remove('aberto');
   if(streamLer){ streamLer.getTracks().forEach(t=>t.stop()); streamLer=null; }
 }
-// Contagem simples por componentes: conta manchas escuras separadas em cada faixa
+// Contagem POR COLUNAS: cada coluna = uma categoria. Ignora as linhas da grelha (compridas).
 function contarRiscos(){
   const video=document.getElementById('videoLer');
   const canvas=document.getElementById('canvasLer');
@@ -603,43 +322,44 @@ function contarRiscos(){
   const img=ctx.getImageData(0,0,canvas.width,canvas.height);
   const d=img.data, W=canvas.width, H=canvas.height;
   contagemLer=[];
-  for(let f=0; f<7; f++){
-    // faixa: 4% a 98% vertical, mesma lógica das guias
-    const y0=Math.floor(H*(0.04+f*0.135)), y1=Math.floor(H*(0.04+f*0.135+0.11));
-    const x0=Math.floor(W*0.06), x1=Math.floor(W*0.94);
-    // binarizar: pixel escuro = risco
-    const w=x1-x0, h=y1-y0;
-    const bin=new Uint8Array(w*h);
-    for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+  const y0=Math.floor(H*0.27), y1=Math.floor(H*0.985);
+  for(let c=0; c<7; c++){
+    const x0=Math.floor(W*(0.025+c*0.139)), x1=Math.floor(W*(0.025+c*0.139+0.132));
+    const w=x1-x0, hh=y1-y0;
+    const bin=new Uint8Array(w*hh);
+    for(let y=0;y<hh;y++) for(let x=0;x<w;x++){
       const idx=((y0+y)*W+(x0+x))*4;
       const g=(d[idx]+d[idx+1]+d[idx+2])/3;
-      bin[y*w+x]= g<110 ? 1:0;
+      bin[y*w+x]= g<115 ? 1:0;
     }
-    // componentes ligados (flood fill simplificado)
-    const visto=new Uint8Array(w*h); let comp=0;
+    const visto=new Uint8Array(w*hh); let comp=0;
     const stack=[];
     for(let i=0;i<bin.length;i++){
       if(!bin[i]||visto[i]) continue;
-      // só conta manchas com algum tamanho (ignora ruído)
-      let tam=0; stack.length=0; stack.push(i); visto[i]=1;
+      let tam=0, minX=9999,maxX=-1,minY=9999,maxY=-1;
+      stack.length=0; stack.push(i); visto[i]=1;
       while(stack.length){
         const cur=stack.pop(); tam++;
         const cx=cur%w, cy=(cur/w)|0;
-        const viz=[[1,0],[-1,0],[0,1],[0,-1]];
+        if(cx<minX)minX=cx; if(cx>maxX)maxX=cx; if(cy<minY)minY=cy; if(cy>maxY)maxY=cy;
+        const viz=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]];
         for(const [dx,dy] of viz){
           const nx=cx+dx, ny=cy+dy;
-          if(nx<0||ny<0||nx>=w||ny>=h) continue;
+          if(nx<0||ny<0||nx>=w||ny>=hh) continue;
           const ni=ny*w+nx;
           if(bin[ni]&&!visto[ni]){ visto[ni]=1; stack.push(ni); }
         }
       }
-      if(tam>30) comp++;
+      const bw=maxX-minX+1, bh=maxY-minY+1;
+      const eGrelha = (bw > w*0.7) || (bh > hh*0.6) || (bw>60 && bh<4) || (bh>200 && bw<4);
+      const eRisco = tam>25 && tam<4000 && bw>=2 && bw<=45 && bh>=10 && bh<=180 && !eGrelha;
+      if(eRisco) comp++;
     }
-    // Cada risco costuma ser 1 mancha. Se o risco de grupo (diagonal) tocar nos outros, conta como 1 grupo de 5 - corrigimos: se comp for muito pequeno face à área escura, estimamos por área
     let area=0; for(let i=0;i<bin.length;i++) if(bin[i]) area++;
-    // Heurística: um risco ocupa ~ 120-400px nesta escala. Usa o maior entre comp e área/250, para não sub-contar grupos ligados
-    const porArea=Math.round(area/280);
-    contagemLer.push(Math.max(comp, Math.min(porArea, comp+4)));
+    const areaGrelha = (w*2*2) + (hh*2*2) + (w*20*1.5);
+    const areaRiscos = Math.max(0, area - areaGrelha);
+    const porArea = Math.round(areaRiscos/170);
+    contagemLer.push(Math.max(comp, Math.min(porArea, comp+6)));
   }
   mostrarResultadoLer();
 }
