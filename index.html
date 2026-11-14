@@ -114,7 +114,7 @@ const denoms=[1,2,3,5,10,15,20];let counts={1:16,2:41,3:17,5:20,10:4,15:0,20:0};
 // ===== LIGAÇÃO AO GOOGLE SHEETS =====
 // 1. Segue os passos que te dei no chat para criar o Apps Script
 // 2. Cola aqui o URL do Web App que o Google te der (termina em /exec)
-const SHEET_URL = ''; // <-- COLA AQUI O TEU URL DO GOOGLE APPS SCRIPT
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxNP6ms5e1DYw4nZx5vEUzhnAGwHHzOqEywLBa6DCJ-BuDJoN1OQfheYq13735aoHh8/exec'; // <-- COLA AQUI O TEU URL DO GOOGLE APPS SCRIPT
 let hist = JSON.parse(localStorage.getItem('contagem_hist')||'[]');
 let aSincronizar = false;
 async function carregarDoSheets(){
