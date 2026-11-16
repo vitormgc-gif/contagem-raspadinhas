@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Contagem Diária de Raspadinhas</title><style>
+<title>Contagem Diária de Raspadinhas</title><script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=yeB1euRn9A33ol_mpECwgk_PoNnjSmVkw6ubw4TF-hE2SW8Oec5Og93Kx1PYmfLLGOrZ8yvrTFAPUcBY83ujoEYqMxWJI5kfhqQK9WbuPajp857Utl7jl79QxL9FK0c0lSEH5xwMhYevUYGZt7MgGXW7gZ5wYO2mwJA_ItXlNj-x67Tp3RrGcSmgbWCz5o9-IHgmnup1FNPt6xBk0dASQD27Jq05df8gjrf5_IDqDfOjL5R_XFq8MR76MxTBLJkKjKaQloM9mPME6u0_lXvZdg" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly8xMzk3MTMwNTg2ODIxMjU4LmEubWV0YWFpdXNlcmNvbnRlbnQuY29tL2h0bWw_YXJ0aWZhY3RfdXVpZD0yNWM0YjI4NC0zNTQ1LTQxOWMtYTA5ZS1hODY4NTg2N2Q0ZjQmZG93bmxvYWQ9Q29udGFnZW0tRGlhcmlhLmh0bWwmZXh0PTE3OTQ5Mzg0MDAmaGFzaD1RNWZwREFHWDJkTVNzNW1sMWE0T21rQi15cWYt"/><style>
 /* Fontes do sistema - sem download externo, abre mais rápido no telemóvel */
 :root{--ink:#16211e;--mut:#677873;--line:#e9e2d6;--teal:#0d7a6d;--teal2:#12b5a0}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
@@ -74,7 +74,7 @@ h2{color:#16211e;font-family:Georgia,serif;font-size:22px;margin-top:0}h3{color:
 <div class="card"><div class="row">
 <div style="flex:1;min-width:180px"><label>Dia</label><input type="date" id="dia" value="2026-11-13"></div>
 <div style="flex:1;min-width:220px"><label>📸 Foto da folha</label><div style="display:flex;gap:8px;flex-wrap:wrap">
-<button class="btn btn-dark" type="button" onclick="document.getElementById('fotoCamera').click()">📷 Tirar foto</button><button class="btn btn-green" type="button" id="btnLerFolha" style="margin-left:8px">📷 Ler folha — COLUNAS v2</button></div>
+<button class="btn btn-dark" type="button" onclick="document.getElementById('fotoCamera').click()">📷 Tirar foto</button><button class="btn btn-green" type="button" id="btnLerFolha" style="margin-left:8px">📷 Ler folha — 1ª edição</button></div>
 <input type="file" id="fotoCamera" accept="image/*" capture="environment" style="display:none"></div></div>
 <img id="preview"><p class="muted">A foto serve para conferires. Confirma com os botões + / −.</p></div>
 <div class="card"><h2>📅 Folha Diária — Contagem do dia</h2><div class="grid" id="grid"></div>
@@ -275,13 +275,13 @@ setInterval(carregarDoSupabase, 15000);
 // Versão leve: NÃO vai buscar ao Sheets ao abrir. Só quando carregares em Sincronizar.
 </script>
 <div id="modalLer">
-  <div style="padding:12px;color:#fff;display:flex;justify-content:space-between;align-items:center"><b>📷 Ler folha — COLUNAS v2 de riscos</b><button id="fecharLer" style="background:#fff;border:0;border-radius:999px;padding:8px 12px;font-weight:800">✕ Fechar</button></div>
+  <div style="padding:12px;color:#fff;display:flex;justify-content:space-between;align-items:center"><b>📷 Ler folha — 1ª edição de riscos</b><button id="fecharLer" style="background:#fff;border:0;border-radius:999px;padding:8px 12px;font-weight:800">✕ Fechar</button></div>
   <div style="position:relative;flex:1;background:#000;overflow:hidden">
     <video id="videoLer" autoplay playsinline></video>
     <canvas id="canvasLer" style="display:none"></canvas>
     <div class="guias" id="guiasLer"></div>
   </div>
-  <div style="padding:12px;color:#fff;font-size:13px;line-height:1.4">Alinha a folha dentro das caixas. Cada <b>coluna</b> é uma categoria, da esquerda para a direita: <b>1€, 2€, 3€, 5€, 10€, 15€, 20€</b>. Alinha o cabeçalho 1€…20€ com o topo das caixas. Boa luz, telemóvel direito, sem sombras.</div>
+  <div style="padding:12px;color:#fff;font-size:13px;line-height:1.4">Aponta o telemóvel à folha toda, direita, com boa luz e sem sombras. A app conta os riscos em cada coluna: <b>1€, 2€, 3€, 5€, 10€, 15€, 20€</b>, da esquerda para a direita.</div>
   <div style="padding:0 12px 12px;display:flex;gap:8px">
     <button id="capturarLer" style="flex:1;background:#12b5a0;color:#fff;border:0;border-radius:12px;padding:14px;font-weight:900;font-size:16px">📸 Capturar e contar</button>
     <button id="usarLer" style="flex:1;background:#ffb703;border:0;border-radius:12px;padding:14px;font-weight:900;display:none">✅ Usar estes números</button>
@@ -291,14 +291,7 @@ setInterval(carregarDoSupabase, 15000);
 <script>
 const DENOMS_LER=[1,2,3,5,10,15,20];
 let streamLer=null, contagemLer=[0,0,0,0,0,0,0];
-function montarGuias(){
-  const g=document.getElementById('guiasLer'); g.innerHTML='';
-  DENOMS_LER.forEach((d,i)=>{
-    const div=document.createElement('div'); div.className='guia-linha';
-    div.style.left=(2.5+i*13.9)+'%'; div.textContent=d+'€';
-    g.appendChild(div);
-  });
-}
+function montarGuias(){ document.getElementById('guiasLer').innerHTML=''; }
 async function abrirLer(){
   montarGuias();
   document.getElementById('modalLer').classList.add('aberto');
@@ -313,7 +306,7 @@ function fecharLer(){
   document.getElementById('modalLer').classList.remove('aberto');
   if(streamLer){ streamLer.getTracks().forEach(t=>t.stop()); streamLer=null; }
 }
-// Contagem POR COLUNAS: cada coluna = uma categoria. Ignora as linhas da grelha (compridas).
+// Contagem 1ª edição: simples, sem filtros - conta manchas escuras em cada coluna
 function contarRiscos(){
   const video=document.getElementById('videoLer');
   const canvas=document.getElementById('canvasLer');
@@ -322,27 +315,25 @@ function contarRiscos(){
   const img=ctx.getImageData(0,0,canvas.width,canvas.height);
   const d=img.data, W=canvas.width, H=canvas.height;
   contagemLer=[];
-  const y0=Math.floor(H*0.27), y1=Math.floor(H*0.985);
+  const y0=Math.floor(H*0.25), y1=Math.floor(H*0.985);
   for(let c=0; c<7; c++){
-    const x0=Math.floor(W*(0.025+c*0.139)), x1=Math.floor(W*(0.025+c*0.139+0.132));
+    const x0=Math.floor(W*c/7), x1=Math.floor(W*(c+1)/7);
     const w=x1-x0, hh=y1-y0;
     const bin=new Uint8Array(w*hh);
     for(let y=0;y<hh;y++) for(let x=0;x<w;x++){
       const idx=((y0+y)*W+(x0+x))*4;
       const g=(d[idx]+d[idx+1]+d[idx+2])/3;
-      bin[y*w+x]= g<115 ? 1:0;
+      bin[y*w+x]= g<110 ? 1:0;
     }
     const visto=new Uint8Array(w*hh); let comp=0;
     const stack=[];
     for(let i=0;i<bin.length;i++){
       if(!bin[i]||visto[i]) continue;
-      let tam=0, minX=9999,maxX=-1,minY=9999,maxY=-1;
-      stack.length=0; stack.push(i); visto[i]=1;
+      let tam=0; stack.length=0; stack.push(i); visto[i]=1;
       while(stack.length){
         const cur=stack.pop(); tam++;
         const cx=cur%w, cy=(cur/w)|0;
-        if(cx<minX)minX=cx; if(cx>maxX)maxX=cx; if(cy<minY)minY=cy; if(cy>maxY)maxY=cy;
-        const viz=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]];
+        const viz=[[1,0],[-1,0],[0,1],[0,-1]];
         for(const [dx,dy] of viz){
           const nx=cx+dx, ny=cy+dy;
           if(nx<0||ny<0||nx>=w||ny>=hh) continue;
@@ -350,16 +341,11 @@ function contarRiscos(){
           if(bin[ni]&&!visto[ni]){ visto[ni]=1; stack.push(ni); }
         }
       }
-      const bw=maxX-minX+1, bh=maxY-minY+1;
-      const eGrelha = (bw > w*0.7) || (bh > hh*0.6) || (bw>60 && bh<4) || (bh>200 && bw<4);
-      const eRisco = tam>25 && tam<4000 && bw>=2 && bw<=45 && bh>=10 && bh<=180 && !eGrelha;
-      if(eRisco) comp++;
+      if(tam>30) comp++;
     }
     let area=0; for(let i=0;i<bin.length;i++) if(bin[i]) area++;
-    const areaGrelha = (w*2*2) + (hh*2*2) + (w*20*1.5);
-    const areaRiscos = Math.max(0, area - areaGrelha);
-    const porArea = Math.round(areaRiscos/170);
-    contagemLer.push(Math.max(comp, Math.min(porArea, comp+6)));
+    const porArea=Math.round(area/280);
+    contagemLer.push(Math.max(comp, Math.min(porArea, comp+4)));
   }
   mostrarResultadoLer();
 }
