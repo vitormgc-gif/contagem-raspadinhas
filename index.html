@@ -276,8 +276,7 @@ setInterval(carregarDoSupabase, 15000);
 const DENOMS_LER=[1,2,3,5,10,15,20];
 let streamLer=null, contagemLer=[0,0,0,0,0,0,0];
 function preencherContagem(arr){ DENOMS_LER.forEach((den,i)=>{ try{ counts[den]=Math.max(0, parseInt(arr[i])||0); }catch(e){} }); try{ render(); }catch(e){} }
-function montarGuias(){ document.getElementById('guiasLer').innerHTML=''; }
-async function abrirLer(){ montarGuias(); document.getElementById('modalLer').classList.add('aberto'); document.getElementById('resultadoLer').style.display='none'; document.getElementById('usarLer').style.display='none'; try{ streamLer=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); document.getElementById('videoLer').srcObject=streamLer; }catch(e){ alert('Não consegui abrir a câmara. Verifica se deste permissão à câmara neste site.'); } }
+async function abrirLer(){ document.getElementById('modalLer').classList.add('aberto'); document.getElementById('resultadoLer').style.display='none'; document.getElementById('usarLer').style.display='none'; try{ streamLer=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); document.getElementById('videoLer').srcObject=streamLer; }catch(e){ alert('Não consegui abrir a câmara. Verifica se deste permissão à câmara neste site.'); } }
 function fecharLer(){ document.getElementById('modalLer').classList.remove('aberto'); if(streamLer){ streamLer.getTracks().forEach(t=>t.stop()); streamLer=null; } }
 function contarRiscos(){
   const video=document.getElementById('videoLer'); const canvas=document.getElementById('canvasLer');
