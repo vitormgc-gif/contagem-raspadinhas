@@ -71,7 +71,7 @@ h2{color:#16211e;font-family:Georgia,serif;font-size:22px;margin-top:0}h3{color:
 <div class="card"><div class="row">
 <div style="flex:1;min-width:180px"><label>Dia</label><input type="date" id="dia" value="2026-11-13"></div>
 <div style="flex:1;min-width:220px"><label>📸 Foto da folha</label><div style="display:flex;gap:8px;flex-wrap:wrap">
-<button class="btn btn-dark" type="button" onclick="document.getElementById('fotoCamera').click()">📷 Tirar foto</button><button class="btn btn-green" type="button" id="btnLerFolha" style="margin-left:8px">📷 Ler folha — 1ª edição</button></div>
+<button class="btn btn-dark" type="button" onclick="document.getElementById('fotoCamera').click()">📷 Tirar foto</button><button class="btn btn-green" type="button" id="btnLerFolha" style="margin-left:8px">📷 Ler folha — v3 sem grelha</button></div>
 <input type="file" id="fotoCamera" accept="image/*" capture="environment" style="display:none"></div></div>
 <img id="preview"><p class="muted">A foto serve para conferires. Confirma com os botões + / −.</p></div>
 <div class="card"><h2>📅 Folha Diária — Contagem do dia</h2><div class="grid" id="grid"></div>
@@ -266,7 +266,7 @@ setInterval(carregarDoSupabase, 15000);
 // Versão leve: NÃO vai buscar ao Sheets ao abrir. Só quando carregares em Sincronizar.
 </script>
 <div id="modalLer">
-  <div style="padding:12px;color:#fff;display:flex;justify-content:space-between;align-items:center"><b>📷 Ler folha — 1ª edição</b><button id="fecharLer" style="background:#fff;border:0;border-radius:999px;padding:8px 12px;font-weight:800">✕ Fechar</button></div>
+  <div style="padding:12px;color:#fff;display:flex;justify-content:space-between;align-items:center"><b>📷 Ler folha — v3 sem grelha</b><button id="fecharLer" style="background:#fff;border:0;border-radius:999px;padding:8px 12px;font-weight:800">✕ Fechar</button></div>
   <div style="position:relative;flex:1;background:#000;overflow:hidden"><video id="videoLer" autoplay playsinline style="width:100%;height:100%;object-fit:cover"></video><canvas id="canvasLer" style="display:none"></canvas><div id="guiasLer"></div></div>
   <div style="padding:12px;color:#fff;font-size:13px;line-height:1.4">Aponta o telemóvel à folha toda, direita, com boa luz e sem sombras. A app conta os riscos em cada coluna: <b>1€, 2€, 3€, 5€, 10€, 15€, 20€</b>, da esquerda para a direita.</div>
   <div style="padding:0 12px 12px;display:flex;gap:8px"><button id="capturarLer" style="flex:1;background:#12b5a0;color:#fff;border:0;border-radius:12px;padding:14px;font-weight:900;font-size:16px">📸 Capturar e contar</button><button id="usarLer" style="flex:1;background:#ffb703;border:0;border-radius:12px;padding:14px;font-weight:900;display:none">✅ Usar estes números</button></div>
@@ -283,15 +283,45 @@ function contarRiscos(){
   canvas.width=video.videoWidth||640; canvas.height=video.videoHeight||480;
   const ctx=canvas.getContext('2d'); ctx.drawImage(video,0,0,canvas.width,canvas.height);
   const img=ctx.getImageData(0,0,canvas.width,canvas.height); const d=img.data, W=canvas.width, H=canvas.height;
+  // 1. Binarizar: escuro = risco ou grelha
+  const bin=new Uint8Array(W*H);
+  for(let i=0;i<W*H;i++){ const g=(d[i*4]+d[i*4+1]+d[i*4+2])/3; bin[i]= g<130 ? 1:0; }
+  // 2. Achar linhas da grelha: linhas com mais de 70% de pixeis escuros = linha horizontal da tabela
+  const gridRow=new Uint8Array(H), gridCol=new Uint8Array(W);
+  for(let y=0;y<H;y++){ let s=0; for(let x=0;x<W;x++) s+=bin[y*W+x]; if(s/W>0.70) gridRow[y]=1; }
+  for(let x=0;x<W;x++){ let s=0; for(let y=0;y<H;y++) s+=bin[y*W+x]; if(s/H>0.70) gridCol[x]=1; }
+  // 3. Limpar grelha: pixeis em linhas/colunas da grelha passam a branco
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(gridRow[y]||gridCol[x]) bin[y*W+x]=0; }
+  // 4. Achar os intervalos entre linhas da grelha (as células). Saltar o cabeçalho (primeira célula = 1€...20€)
+  const seps=[]; let emGrid=false;
+  for(let y=0;y<H;y++){ if(gridRow[y]&&!emGrid){ seps.push(y); emGrid=true; } if(!gridRow[y]) emGrid=false; }
+  // Se não achou grelha, volta à contagem simples por coluna
+  if(seps.length<3){ contarRiscosSimples(bin,W,H); return; }
+  contagemLer=[0,0,0,0,0,0,0];
+  // Para cada linha de células (a partir da 2ª linha = primeira com riscos)
+  for(let r=1;r<seps.length-1;r++){
+    const y0=seps[r]+2, y1=seps[r+1]-2; if(y1<=y0) continue;
+    for(let c=0;c<7;c++){
+      const x0=Math.floor(W*c/7)+2, x1=Math.floor(W*(c+1)/7)-2;
+      // Projecção: para cada x, quantos pixeis escuros há na vertical dentro da célula
+      const proj=[]; for(let x=x0;x<x1;x++){ let s=0; for(let y=y0;y<y1;y++) s+=bin[y*W+x]; proj.push(s); }
+      // Contar picos: subir acima de 25% da altura da célula, depois descer
+      const lim=(y1-y0)*0.25; let acima=false, picos=0;
+      for(let i=0;i<proj.length;i++){
+        if(!acima && proj[i]>=lim){ acima=true; picos++; }
+        if(acima && proj[i]<lim*0.4) acima=false;
+      }
+      contagemLer[c]+=picos;
+    }
+  }
+  mostrarResultadoLer();
+}
+function contarRiscosSimples(bin,W,H){
   contagemLer=[]; const y0=Math.floor(H*0.25), y1=Math.floor(H*0.985);
-  for(let c=0; c<7; c++){
-    const x0=Math.floor(W*c/7), x1=Math.floor(W*(c+1)/7); const w=x1-x0, hh=y1-y0;
-    const bin=new Uint8Array(w*hh);
-    for(let y=0;y<hh;y++) for(let x=0;x<w;x++){ const idx=((y0+y)*W+(x0+x))*4; const g=(d[idx]+d[idx+1]+d[idx+2])/3; bin[y*w+x]= g<110 ? 1:0; }
-    const visto=new Uint8Array(w*hh); let comp=0; const stack=[];
-    for(let i=0;i<bin.length;i++){ if(!bin[i]||visto[i]) continue; let tam=0; stack.length=0; stack.push(i); visto[i]=1; while(stack.length){ const cur=stack.pop(); tam++; const cx=cur%w, cy=(cur/w)|0; const viz=[[1,0],[-1,0],[0,1],[0,-1]]; for(const [dx,dy] of viz){ const nx=cx+dx, ny=cy+dy; if(nx<0||ny<0||nx>=w||ny>=hh) continue; const ni=ny*w+nx; if(bin[ni]&&!visto[ni]){ visto[ni]=1; stack.push(ni); } } } if(tam>30) comp++; }
-    let area=0; for(let i=0;i<bin.length;i++) if(bin[i]) area++; const porArea=Math.round(area/280);
-    contagemLer.push(Math.max(comp, Math.min(porArea, comp+4)));
+  for(let c=0;c<7;c++){
+    const x0=Math.floor(W*c/7), x1=Math.floor(W*(c+1)/7);
+    let area=0; for(let y=y0;y<y1;y++) for(let x=x0;x<x1;x++) area+=bin[y*W+x];
+    contagemLer.push(Math.max(0, Math.round(area/220)));
   }
   mostrarResultadoLer();
 }
